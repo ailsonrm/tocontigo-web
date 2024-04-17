@@ -1,0 +1,42 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "jest": true
+  },
+  "extends": [
+    "plugin:react/recommended",
+    "airbnb",
+    "prettier",
+    "prettier"
+  ],
+  "overrides": [],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": ["react"],
+  "rules": {
+    "dot-notation": [0, { "allowKeywords": false }],
+    "prettier/prettier": "off",
+    "semi": "off",
+    "react/prop-types": "off",
+    "import/extensions": "off",
+    "react/jsx-filename-extension": [
+      1,
+      { "extensions": [".js", ".jsx"] }
+    ],
+    "import/no-unresolved": "off",
+    "react/function-component-definition": "off",
+    "jsx-a11y/click-events-have-key-events": "off",
+    "jsx-a11y/no-static-element-interactions": "off",
+    "jsx-a11y/anchor-is-valid": "off",
+    "react/self-closing-comp": "off",
+    "import/prefer-default-export": "off",
+    "jsx-a11y/label-has-associated-control": "off",
+    "react/require-default-props": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/react-in-jsx-scope": "off"
+  }
+}
+
