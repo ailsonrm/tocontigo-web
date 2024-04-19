@@ -3,11 +3,28 @@ import { Doughnut } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import { FaRestroom } from 'react-icons/fa';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import styled from 'styled-components';
+
+const CustomChartsContainer = styled.div`
+  position: relative;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 220px;
+  flex: 1;
+
+  @media (max-width: 470px) {
+    height: auto;
+  }
+`;
 
 const GenderChart = ({ data }) => {
   Chart.register(ChartDataLabels);
 
-  const config = {
+  const doughnutConfig = {
     labels: ['Masculino', 'Feminino'],
     datasets: [
       {
@@ -21,7 +38,7 @@ const GenderChart = ({ data }) => {
     plugins: [ChartDataLabels]
   };
 
-  const options = {
+  const doughnutOptions = {
     responsive: true,
     plugins: {
       tooltip: {
@@ -41,7 +58,8 @@ const GenderChart = ({ data }) => {
       datalabels: {
         color: 'black',
         font: {
-          weight: 'bold'
+          weight: 'bold',
+          size: 10
         },
         formatter: (value, ctx) => {
           let sum = 0;
@@ -53,17 +71,27 @@ const GenderChart = ({ data }) => {
           if (percentage === '0%') {
             percentage = '';
           }
-          let valueFormated = value ? `\n(${value})` : '';
+          let valueFormated = value
+            ? `\n${' '.repeat(
+                Math.floor((percentage.length + 1) / 2)
+              )}(${value})`
+            : '';
           return `${percentage}${valueFormated}`;
         }
       },
       legend: {
         display: true,
-        position: 'bottom'
+        position: 'bottom',
+        align: 'center',
+        labels: {
+          boxWidth: 20,
+          padding: 20,
+          usePointStyle: true,
+        }
       },
       title: {
         display: true,
-        text: '\u00A0\u00A0\u00A0Quantidade por Gênero',
+        text: 'Quantidade por Gênero',
         position: 'top',
         align: 'start',
         font: {
@@ -78,28 +106,20 @@ const GenderChart = ({ data }) => {
   };
 
   return (
-    <div
-      style={{
-        width: '250px',
-        heigth: '250px',
-        position: 'relative',
-        border: '1px solid #dee2e6',
-        borderRadius: '10px'
-      }}
-    >
-      <Doughnut data={config} options={options} />
+    <CustomChartsContainer>
+      <Doughnut data={doughnutConfig} options={doughnutOptions} />
       <div
         style={{
           position: 'absolute',
-          top: '50%',
+          top: '45%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           textAlign: 'center'
         }}
       >
-        <FaRestroom style={{ fontSize: '100px', opacity: 0.5 }} />
+        <FaRestroom style={{ fontSize: '70px', opacity: 0.5 }} />
       </div>
-    </div>
+    </CustomChartsContainer>
   );
 };
 

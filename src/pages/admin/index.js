@@ -12,6 +12,31 @@ import { MdGroups } from 'react-icons/md';
 import { FaPercent } from 'react-icons/fa';
 import { FaHandshake } from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
+import styled from 'styled-components';
+
+const CustomCounter = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
+
+  @media (max-width: 470px) {
+    flex-direction: column;
+  }
+`;
+
+const CustomChartsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+    
+  @media (max-width: 470px) {
+    flex-direction: column;
+  }
+`;
 
 const PageAdmin = () => {
   const { currentUser } = useContext(ContextUser);
@@ -21,7 +46,10 @@ const PageAdmin = () => {
   const [groupMeta, setGroupMeta] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
 
-  const genderData = [dashboardData?.maleVoters ||0, dashboardData?.femaleVoters ||0];
+  const genderData = [
+    dashboardData?.maleVoters || 0,
+    dashboardData?.femaleVoters || 0
+  ];
   const neighborhoodData = {
     labels: ['Primavera', 'São João', 'Paraíso', 'Soberana'],
     values: [8, 16, 21, 27]
@@ -48,19 +76,19 @@ const PageAdmin = () => {
   return (
     <>
       <Page title="Admin">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              justifyContent: 'space-between'
-            }}
-          >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px'
+          }}
+        >
+          <CustomCounter>
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: 'rgb(221 167 0)',
-                width: '250px',
+                minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -79,10 +107,10 @@ const PageAdmin = () => {
                   alignItems: 'center'
                 }}
               >
-                <spam style={{ fontWeight: '800', fontSize: '24px' }}>
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
                   {dashboardData?.groupMeta || 0}
-                </spam>
-                <spam style={{ fontSize: '14px' }}>Meta do grupo</spam>
+                </span>
+                <span style={{ fontSize: '14px' }}>Meta do grupo</span>
               </div>
             </div>
 
@@ -90,7 +118,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#70bf3b',
-                width: '250px',
+                minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -109,17 +137,18 @@ const PageAdmin = () => {
                   alignItems: 'center'
                 }}
               >
-                <spam style={{ fontWeight: '800', fontSize: '24px' }}>
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
                   {`${dashboardData?.percentMeta || 0}%`}
-                </spam>
-                <spam style={{ fontSize: '14px' }}>Meta atingida</spam>
+                </span>
+                <span style={{ fontSize: '14px' }}>Meta atingida</span>
               </div>
             </div>
+
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#6795f3',
-                width: '250px',
+                minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -138,17 +167,18 @@ const PageAdmin = () => {
                   alignItems: 'center'
                 }}
               >
-                <spam style={{ fontWeight: '800', fontSize: '24px' }}>
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
                   {dashboardData?.totalActiveVoters || 0}
-                </spam>
-                <spam style={{ fontSize: '14px' }}>Votos ganhos</spam>
+                </span>
+                <span style={{ fontSize: '14px' }}>Votos ganhos</span>
               </div>
             </div>
+
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#ef7878',
-                width: '250px',
+                minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -167,19 +197,19 @@ const PageAdmin = () => {
                   alignItems: 'center'
                 }}
               >
-                <spam style={{ fontWeight: '800', fontSize: '24px' }}>
-                {dashboardData?.totalActiveVoters || 0}
-                </spam>
-                <spam style={{ fontSize: '14px' }}>Votos possíveis</spam>
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
+                  {dashboardData?.totalActiveVoters || 0}
+                </span>
+                <span style={{ fontSize: '14px' }}>Votos possíveis</span>
               </div>
             </div>
-          </div>
+          </CustomCounter>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <CustomChartsContainer>
             <GenderChart data={genderData} />
             <NeighborhoodChart data={neighborhoodData} />
             <SchoolChart data={schollData} />
-          </div>
+          </CustomChartsContainer>
         </div>
 
         <div>
@@ -200,7 +230,10 @@ const PageAdmin = () => {
                 borderBottomRightRadius: '5px'
               }}
             >
-              <Pillar managedBy={currentUser?.id} fetchDashboardData={fetchDashboardData}/>
+              <Pillar
+                managedBy={currentUser?.id}
+                fetchDashboardData={fetchDashboardData}
+              />
             </Tab>
             <Tab
               eventKey="voters"
@@ -214,7 +247,10 @@ const PageAdmin = () => {
                 borderBottomRightRadius: '5px'
               }}
             >
-              <PageVoter ownerId={currentUser?.id} fetchDashboardData={fetchDashboardData}/>
+              <PageVoter
+                ownerId={currentUser?.id}
+                fetchDashboardData={fetchDashboardData}
+              />
             </Tab>
           </Tabs>
         </div>

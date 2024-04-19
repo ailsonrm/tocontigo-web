@@ -7,6 +7,10 @@ export const GlobalStyle = createGlobalStyle`
   margin: 0px;
 }
 
+.custom-tooltip-inner .tooltip-inner {
+  max-width: fit-content;
+}
+
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,

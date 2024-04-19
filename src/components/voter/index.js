@@ -1,7 +1,15 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import moment from 'moment';
-import { Accordion, Button, Modal, Form, Spinner } from 'react-bootstrap';
+import {
+  Accordion,
+  Button,
+  Modal,
+  Form,
+  Spinner,
+  Tooltip,
+  OverlayTrigger
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
@@ -45,6 +53,20 @@ const validationSchema = Yup.object().shape({
   ownerId: Yup.string().required('Responsável é obrigatório')
 });
 
+const VoterInfoContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+
+  @media (max-width: 470px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
 const MySelect = ({ label, ...props }) => {
   const [field, meta] = useField(props);
   return (
@@ -68,12 +90,12 @@ const cleanPhoneNumber = phoneNumber => {
 
 const PageVoter = ({ ownerId, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
+  const { role } = currentUser;
   const [showModal, setShowModal] = useState(false);
   const [voters, setVoters] = useState([]);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
-  const [isLoadingInfos, setIsLoadingInfos] = useState(false);
-  const [activeVoterId, setActiveVoterId] = useState(null);
+  const [loadingInfos, setLoadingInfos] = useState({});
 
   const handleInputChange = event => {
     const { name, value } = event.target;
@@ -122,8 +144,10 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   async function handleCompleteInfos(voter) {
-    setIsLoadingInfos(true);
-    setActiveVoterId(voter.id);
+    setLoadingInfos(prevLoadingInfos => ({
+      ...prevLoadingInfos,
+      [voter.id]: true
+    }));
 
     var formattedValues = {
       nome: voter.name,
@@ -142,7 +166,12 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         console.error('Erro na API', error.response.data.error);
         showSnackbar(error.response.data.error, 'error');
       })
-      .finally(() => setIsLoadingInfos(false));
+      .finally(() =>
+        setLoadingInfos(prevLoadingInfos => ({
+          ...prevLoadingInfos,
+          [voter.id]: false
+        }))
+      );
   }
 
   function handleRemoveVoter(voter) {
@@ -189,8 +218,11 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   const getColor = situation => {
     switch (situation) {
       case 'REGULAR':
+      case 'QUITE':
         return 'rgb(0, 128, 0)';
-      case 'NÃO REGULAR':
+      case 'CANCELADO':
+      case 'SUSPENSO':
+      case 'NÃO-QUITE':
         return 'rgb(255, 0, 0)';
       case 'INCOMPLETO':
       case null:
@@ -199,6 +231,13 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         return 'rgb(73, 169, 255)';
     }
   };
+
+  function showVoterInfo(voter, voterInfo) {
+    if (!voter?.situation) {
+      return '----------';
+    }
+    return voterInfo;
+  }
 
   return (
     <div
@@ -232,9 +271,6 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       {voters.length > 0 ? (
         <div
           style={{
-            padding: '10px',
-            border: '1px solid rgb(222, 226, 230)',
-            borderRadius: '5px',
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
@@ -248,10 +284,10 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
             .map((voter, index) => (
               <Accordion
                 key={voter.id}
-                defaultActiveKey="0"
+                defaultActiveKey=""
                 style={{ marginTop: '5px' }}
               >
-                <Accordion.Item eventKey={index.toString()}>
+                <Accordion.Item eventKey={voter.id}>
                   <Accordion.Header
                     style={{
                       display: 'flex',
@@ -259,39 +295,51 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                       justifyContent: 'space-between'
                     }}
                   >
-                    <div
-                      style={{
-                        width: '100%'
-                      }}
-                    >
+                    <VoterInfoContainer>
                       {voter.name}
                       <div
                         style={{
                           display: 'flex',
                           float: 'right',
                           flexDirection: 'row',
-                          gap: '5px'
+                          gap: '5px',
+                          marginRight: '10px'
                         }}
                       >
-                        {isLoadingInfos && activeVoterId === voter.id ? (
+                        {loadingInfos[voter.id] ? (
                           <Spinner
                             variant="success"
                             style={{ width: '20px', height: '20px' }}
                           />
                         ) : (
-                          <SiReacthookform
-                            onClick={() => {
-                              setIsLoadingInfos(true);
-                              handleCompleteInfos(voter);
-                              setActiveVoterId(voter.id);
-                            }}
-                            style={{
-                              fontSize: '18px',
-                              color: 'green',
-                              strokeWidth: '1px',
-                              cursor: 'pointer'
-                            }}
-                          />
+                          <OverlayTrigger
+                            placement="bottom-start"
+                            delay={{ show: 250, hide: 400 }}
+                            overlay={
+                              <Tooltip
+                                id={`tooltip-${voter.id}`}
+                                className="custom-tooltip-inner"
+                              >
+                                Buscar dados complementares
+                              </Tooltip>
+                            }
+                          >
+                            <span>
+                              <SiReacthookform
+                                onClick={event => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  handleCompleteInfos(voter);
+                                }}
+                                style={{
+                                  fontSize: '18px',
+                                  color: 'green',
+                                  strokeWidth: '1px',
+                                  cursor: 'pointer'
+                                }}
+                              />
+                            </span>
+                          </OverlayTrigger>
                         )}
 
                         <div
@@ -309,12 +357,31 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                         >
                           {voter.situation || 'NÃO VALIDADO'}
                         </div>
-                        <RiDeleteBin5Line
-                          onClick={() => handleRemoveVoter(voter)}
-                          style={{ cursor: 'pointer', color: '#dc3545' }}
-                        />
+                        <OverlayTrigger
+                          placement="bottom-start"
+                          delay={{ show: 250, hide: 400 }}
+                          overlay={
+                            <Tooltip
+                              id={`tooltip-${voter.id}-delete`}
+                              className="custom-tooltip-inner"
+                            >
+                              Excluir apoiador
+                            </Tooltip>
+                          }
+                        >
+                          <span>
+                            <RiDeleteBin5Line
+                              onClick={() => handleRemoveVoter(voter)}
+                              style={{
+                                cursor: 'pointer',
+                                color: '#dc3545',
+                                fontSize: '20px'
+                              }}
+                            />
+                          </span>
+                        </OverlayTrigger>
                       </div>
-                    </div>
+                    </VoterInfoContainer>
                   </Accordion.Header>
                   <Accordion.Body
                     style={{
@@ -355,106 +422,41 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Escola:
                       </label>
-                      <span>{voter.place || '----------'}</span>
+                      <span>{showVoterInfo(voter, voter.place)}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Endereço:
                       </label>
-                      <span>{voter.placeAddress || '----------'}</span>
+                      <span>{showVoterInfo(voter, voter.placeAddress)}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Cidade/UF:
                       </label>
-                      <span>{voter.placeDistrict || '----------'}</span>
+                      <span>{showVoterInfo(voter, voter.placeDistrict)}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Título:
                       </label>
-                      <span>{voter.registryId || '----------'}</span>
+                      <span>{showVoterInfo(voter, voter.registryId)}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Zona:
                       </label>
-                      <span>{voter.zone || '----------'}</span>
+                      <span>{showVoterInfo(voter, voter.zone)}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Seção:
                       </label>
-                      <span>{voter.section || '----------'} </span>
+                      <span>{showVoterInfo(voter, voter.section)} </span>
                     </div>
                   </Accordion.Body>
                 </Accordion.Item>
               </Accordion>
-              // <div key={voter.id}>
-              //   <div
-              //     style={{ display: 'flex', justifyContent: 'space-between' }}
-              //   >
-              //     {voter.name}{' '}
-              //     <div
-              //       style={{
-              //         display: 'flex',
-              //         flexDirection: 'row',
-              //         justifyContent: 'flex-end',
-              //         alignItems: 'center',
-              //         gap: '5px'
-              //       }}
-              //     >
-              //       {isLoadingInfos ? (
-              //         <Spinner
-              //           variant="success"
-              //           style={{ width: '20px', height: '20px' }}
-              //         />
-              //       ) : (
-              //         <SiReacthookform
-              //           onClick={() => {
-              //             setIsLoadingInfos(true);
-              //             handleCompleteInfos(voter);
-              //           }}
-              //           style={{
-              //             fontSize: '18px',
-              //             color: 'green',
-              //             strokeWidth: '1px',
-              //             cursor: 'pointer'
-              //           }}
-              //         />
-              //       )}
-
-              //       <div
-              //         style={{
-              //           color: getColor(voter.situation),
-              //           border: `1px solid ${getColor(voter.situation)}`,
-              //           padding: '2px 10px',
-              //           borderRadius: '10px',
-              //           fontSize: '12px',
-              //           display: 'flex',
-              //           justifyContent: 'center',
-              //           alignItems: 'center',
-              //           fontWeight: '900'
-              //         }}
-              //       >
-              //         {voter.situation || 'NÃO VALIDADO'}
-              //       </div>
-              //       <RiDeleteBin5Line
-              //         onClick={() => handleRemoveVoter(voter)}
-              //         style={{ cursor: 'pointer', color: '#dc3545' }}
-              //       />
-              //     </div>
-              //   </div>
-              //   {index !== voters.length - 1 && (
-              //     <div
-              //       style={{
-              //         height: '1px',
-              //         backgroundColor: '#dee2e6',
-              //         margin: '10px 0'
-              //       }}
-              //     ></div>
-              //   )}
-              // </div>
             ))}
         </div>
       ) : (

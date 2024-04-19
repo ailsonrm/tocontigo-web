@@ -2,6 +2,22 @@ import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import styled from 'styled-components';
+
+const CustomChartsContainer = styled.div`
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 220px;
+  flex: 2;
+
+  @media (max-width: 470px) {
+    height: auto;
+  }
+`;
 
 const NeighborhoodChart = ({ data }) => {
   Chart.register(ChartDataLabels);
@@ -26,31 +42,22 @@ const NeighborhoodChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: '\u00A0\u00A0\u00A0Votos por Bairro',
+        text: '\u00A0\u00A0Votos por Bairro',
         align: 'start',
         padding: 10
       }
     },
     scales: {
       y: {
-        beginAtZero: true // Garante que a escala Y comece em 0
+        beginAtZero: true
       }
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-      <div
-        style={{
-          width: '500px',
-          height: '250px',
-          border: '1px solid #dee2e6',
-          borderRadius: '10px'
-        }}
-      >
-        <Bar data={barConfig} options={barOptions} />
-      </div>
-    </div>
+    <CustomChartsContainer>
+      <Bar data={barConfig} options={barOptions} />
+    </CustomChartsContainer>
   );
 };
 
