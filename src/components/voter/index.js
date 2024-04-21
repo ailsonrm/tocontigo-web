@@ -152,13 +152,13 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
     var formattedValues = {
       nome: voter.name,
       nomeMae: voter.motherName,
-      dataNascimento: moment(voter.birthDate).utc().format('DD/MM/YYYY')
+      dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD')
     };
 
     api
+      //.patch('/consultarLocalDeVotacao', formattedValues)
       .patch('/consultarLocalDeVotacao', formattedValues)
       .then(r => {
-        console.log('response', r);
         fetchDashboardData();
         handleComplementInfos(voter, r.data);
       })
