@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
 import { FaUserCheck } from 'react-icons/fa';
-import { RiDeleteBin5Line } from 'react-icons/ri';
+import { RiDeleteBin5Line, RiEditLine } from 'react-icons/ri';
 import {
   Formik,
   Field,
@@ -96,6 +96,10 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
   const [loadingInfos, setLoadingInfos] = useState({});
+  const [showEditModal, setShowEditModal] = useState(false);
+  const handleCloseEditModal = () => setShowEditModal(false);
+  const handleShowEditModal = () => setShowEditModal(true);
+  const [selectedVoter, setSelectedVoter] = useState(null);
 
   const handleInputChange = event => {
     const { name, value } = event.target;
@@ -144,35 +148,67 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   async function handleCompleteInfos(voter) {
-    setLoadingInfos(prevLoadingInfos => ({
-      ...prevLoadingInfos,
-      [voter.id]: true
-    }));
+    showSnackbar("Funcionalidade em manutenção!!!", 'error');
+    // setLoadingInfos(prevLoadingInfos => ({
+    //   ...prevLoadingInfos,
+    //   [voter.id]: true
+    // }));
 
-    var formattedValues = {
-      nome: voter.name,
-      nomeMae: voter.motherName,
-      dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD')
+    // var formattedValues = {
+    //   nome: voter.name,
+    //   nomeMae: voter.motherName,
+    //   dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD')
+    // };
+
+    // api
+    //   .patch('/consultarLocalDeVotacao', formattedValues)
+    //   .then(r => {
+    //     fetchDashboardData();
+    //     handleComplementInfos(voter, r.data);
+    //   })
+    //   .catch(error => {
+    //     console.error('Erro na API', error.response.data.error);
+    //     showSnackbar(error.response.data.error, 'error');
+    //   })
+    //   .finally(() =>
+    //     setLoadingInfos(prevLoadingInfos => ({
+    //       ...prevLoadingInfos,
+    //       [voter.id]: false
+    //     }))
+    //   );
+  }
+
+  async function handleEditVoter(voter) {
+    setSelectedVoter(voter);
+    handleShowEditModal();
+  }
+
+  const handleUpdateVoter = async (values, { setSubmitting, resetForm }) => {
+    const formattedBirthDate = moment(values.dataNascimento).toISOString();
+    var updateVoterData = {
+      id: values.id,
+      name: values.nome,
+      motherName: values.nomeMae,
+      birthDate: formattedBirthDate,
+      gender: values.genero,
+      cellPhone: cleanPhoneNumber(values.celular)
     };
 
     api
-      //.patch('/consultarLocalDeVotacao', formattedValues)
-      .patch('/consultarLocalDeVotacao', formattedValues)
-      .then(r => {
+      .patch('/votersTC', updateVoterData)
+      .then(response => {
+        resetForm();
+        handleCloseEditModal();
+        showSnackbar('Apoiador atualizado com sucesso!', 'success');
+        fetchVoters();
         fetchDashboardData();
-        handleComplementInfos(voter, r.data);
       })
       .catch(error => {
         console.error('Erro na API', error.response.data.error);
         showSnackbar(error.response.data.error, 'error');
-      })
-      .finally(() =>
-        setLoadingInfos(prevLoadingInfos => ({
-          ...prevLoadingInfos,
-          [voter.id]: false
-        }))
-      );
-  }
+      });
+    setSubmitting(false);
+  };
 
   function handleRemoveVoter(voter) {
     const removeVoterData = {
@@ -199,7 +235,9 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       place: complementInfos.local,
       placeAddress: complementInfos.endereco,
       placeDistrict: complementInfos.municipio,
-      situation: complementInfos.situacao
+      situation: complementInfos.error
+        ? complementInfos.error
+        : complementInfos.situacao
     };
 
     api
@@ -219,25 +257,25 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
     switch (situation) {
       case 'REGULAR':
       case 'QUITE':
-        return 'rgb(0, 128, 0)';
+        return '#008000';
       case 'CANCELADO':
       case 'SUSPENSO':
       case 'NÃO-QUITE':
-        return 'rgb(255, 0, 0)';
+        return '#f94848';
       case 'INCOMPLETO':
+      case 'NÃO VALIDADO':
       case null:
-        return 'rgb(128, 128, 128)';
+        return '#808080';
       default:
-        return 'rgb(73, 169, 255)';
+        if (situation.startsWith('Erro')) {
+          return '#f94848';
+        }
+        if (situation.startsWith('Local votação - OK')) {
+          return '#ff993e';
+        }
+        return 'black';
     }
   };
-
-  function showVoterInfo(voter, voterInfo) {
-    if (!voter?.situation) {
-      return '----------';
-    }
-    return voterInfo;
-  }
 
   return (
     <div
@@ -296,7 +334,46 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                     }}
                   >
                     <VoterInfoContainer>
-                      {voter.name}
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'flex-start',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        {voter.name}
+                        <OverlayTrigger
+                          placement="bottom-start"
+                          delay={{ show: 250, hide: 400 }}
+                          overlay={
+                            <Tooltip
+                              id={`tooltip-${voter.id}`}
+                              className="custom-tooltip-inner"
+                            >
+                              Editar dados do apoiador
+                            </Tooltip>
+                          }
+                        >
+                          <spam>
+                            <RiEditLine
+                              onClick={event => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleEditVoter(voter);
+                              }}
+                              style={{
+                                cursor: 'pointer',
+                                color: '#007bff',
+                                fontSize: '20px',
+                                marginRight: '10px'
+                              }}
+                            />
+                          </spam>
+                        </OverlayTrigger>
+                      </div>
+
                       <div
                         style={{
                           display: 'flex',
@@ -344,8 +421,19 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
 
                         <div
                           style={{
-                            color: getColor(voter.situation),
-                            border: `1px solid ${getColor(voter.situation)}`,
+                            color:
+                              voter.situation !== null
+                                ? getColor(voter.situation)
+                                : voter.registryId
+                                ? getColor('INCOMPLETO')
+                                : getColor('NÃO VALIDADO'),
+                            border: `1px solid ${
+                              voter.situation !== null
+                                ? getColor(voter.situation)
+                                : voter.registryId
+                                ? getColor('INCOMPLETO')
+                                : getColor('NÃO VALIDADO')
+                            }`,
                             padding: '2px 10px',
                             borderRadius: '10px',
                             fontSize: '12px',
@@ -355,7 +443,11 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                             fontWeight: '900'
                           }}
                         >
-                          {voter.situation || 'NÃO VALIDADO'}
+                          {voter.situation !== null
+                            ? voter.situation
+                            : voter.registryId
+                            ? 'INCOMPLETO'
+                            : 'NÃO VALIDADO'}
                         </div>
                         <OverlayTrigger
                           placement="bottom-start"
@@ -422,37 +514,37 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Escola:
                       </label>
-                      <span>{showVoterInfo(voter, voter.place)}</span>
+                      <span>{voter.place}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Endereço:
                       </label>
-                      <span>{showVoterInfo(voter, voter.placeAddress)}</span>
+                      <span>{voter.placeAddress}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Cidade/UF:
                       </label>
-                      <span>{showVoterInfo(voter, voter.placeDistrict)}</span>
+                      <span>{voter.placeDistrict}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Título:
                       </label>
-                      <span>{showVoterInfo(voter, voter.registryId)}</span>
+                      <span>{voter.registryId}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Zona:
                       </label>
-                      <span>{showVoterInfo(voter, voter.zone)}</span>
+                      <span>{voter.zone}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Seção:
                       </label>
-                      <span>{showVoterInfo(voter, voter.section)} </span>
+                      <span>{voter.section} </span>
                     </div>
                   </Accordion.Body>
                 </Accordion.Item>
@@ -577,6 +669,101 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
               </FormikForm>
             )}
           </Formik>
+        </Modal.Body>
+      </Modal>
+
+      <Modal
+        show={showEditModal}
+        onHide={handleCloseEditModal}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Editar Apoiador</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedVoter && (
+            <Formik
+              initialValues={{
+                id: selectedVoter.id,
+                nome: selectedVoter.name,
+                nomeMae: selectedVoter.motherName,
+                dataNascimento: moment(selectedVoter.birthDate)
+                  .utc()
+                  .format('YYYY-MM-DD'),
+                genero: selectedVoter.gender,
+                celular: selectedVoter.cellPhone,
+                ownerId: selectedVoter.ownerId
+              }}
+              validationSchema={validationSchema}
+              onSubmit={handleUpdateVoter}
+            >
+              {({ isSubmitting, errors, touched }) => (
+                <FormikForm>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Id</Form.Label>
+                    <Field as={Form.Control} type="text" name="id" disabled />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Nome</Form.Label>
+                    <Field
+                      as={Form.Control}
+                      type="text"
+                      name="nome"
+                      isInvalid={!!errors.nome && touched.nome}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.nome}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Nome da Mãe</Form.Label>
+                    <Field
+                      as={Form.Control}
+                      type="text"
+                      name="nomeMae"
+                      isInvalid={!!errors.nomeMae && touched.nomeMae}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.nomeMae}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Data de Nascimento</Form.Label>
+                    <Field
+                      as={Form.Control}
+                      type="date"
+                      name="dataNascimento"
+                      isInvalid={
+                        !!errors.dataNascimento && touched.dataNascimento
+                      }
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.dataNascimento}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
+                  >
+                    <Button
+                      variant="light"
+                      disabled={isSubmitting}
+                      onClick={handleCloseEditModal}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={isSubmitting}
+                    >
+                      Atualizar
+                    </Button>
+                  </div>
+                </FormikForm>
+              )}
+            </Formik>
+          )}
         </Modal.Body>
       </Modal>
     </div>

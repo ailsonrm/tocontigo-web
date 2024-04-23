@@ -162,7 +162,14 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                     >
                       {pillar.name}
                     </Card.Title>
-                    <Card.Subtitle className="mb-2 text-muted">
+                    <Card.Subtitle
+                      className="mb-2 text-muted"
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
                       {pillar.email}
                     </Card.Subtitle>
                     <Card.Text
