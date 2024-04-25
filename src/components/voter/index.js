@@ -147,35 +147,36 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       .finally(() => {});
   }
 
-  async function handleCompleteInfos(voter) {
-    showSnackbar("Funcionalidade em manutenção!!!", 'error');
-    // setLoadingInfos(prevLoadingInfos => ({
-    //   ...prevLoadingInfos,
-    //   [voter.id]: true
-    // }));
+  async function handleSearchInfos(voter) {
+    //showSnackbar("Funcionalidade em manutenção!!!", 'error');
+    setLoadingInfos(prevLoadingInfos => ({
+      ...prevLoadingInfos,
+      [voter.id]: true
+    }));
 
-    // var formattedValues = {
-    //   nome: voter.name,
-    //   nomeMae: voter.motherName,
-    //   dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD')
-    // };
+    var formattedValues = {
+      nome: voter.name,
+      dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD'),
+      //dataNascimento: moment(voter.birthDate).utc().format('DD/MM/YYYY')
+      nomeMae: voter.motherName
+    };
 
-    // api
-    //   .patch('/consultarLocalDeVotacao', formattedValues)
-    //   .then(r => {
-    //     fetchDashboardData();
-    //     handleComplementInfos(voter, r.data);
-    //   })
-    //   .catch(error => {
-    //     console.error('Erro na API', error.response.data.error);
-    //     showSnackbar(error.response.data.error, 'error');
-    //   })
-    //   .finally(() =>
-    //     setLoadingInfos(prevLoadingInfos => ({
-    //       ...prevLoadingInfos,
-    //       [voter.id]: false
-    //     }))
-    //   );
+    api
+      .patch('/votersTC/searchInfos', formattedValues)
+      .then(r => {
+        fetchDashboardData();
+        handleSupplementInfos(voter, r.data);
+      })
+      .catch(error => {
+        console.error('Erro na API', error.response.data.error);
+        showSnackbar(error.response.data.error, 'error');
+      })
+      .finally(() =>
+        setLoadingInfos(prevLoadingInfos => ({
+          ...prevLoadingInfos,
+          [voter.id]: false
+        }))
+      );
   }
 
   async function handleEditVoter(voter) {
@@ -226,7 +227,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       .finally(() => fetchVoters());
   }
 
-  function handleComplementInfos(voter, complementInfos) {
+  function handleSupplementInfos(voter, complementInfos) {
     const complementData = {
       id: voter.id,
       registryId: complementInfos.inscricao,
@@ -237,11 +238,12 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       placeDistrict: complementInfos.municipio,
       situation: complementInfos.error
         ? complementInfos.error
-        : complementInfos.situacao
+        : complementInfos.situacao,
+      responseText: complementInfos.responseText
     };
 
     api
-      .patch(`/votersTC/complementInfos`, complementData)
+      .patch(`/votersTC/supplementInfos`, complementData)
       .then(response => {
         fetchDashboardData();
       })
@@ -267,7 +269,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       case null:
         return '#808080';
       default:
-        if (situation.startsWith('Erro')) {
+        if (situation.startsWith('Dados não conferem')) {
           return '#f94848';
         }
         if (situation.startsWith('Local votação - OK')) {
@@ -344,34 +346,6 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                         }}
                       >
                         {voter.name}
-                        <OverlayTrigger
-                          placement="bottom-start"
-                          delay={{ show: 250, hide: 400 }}
-                          overlay={
-                            <Tooltip
-                              id={`tooltip-${voter.id}`}
-                              className="custom-tooltip-inner"
-                            >
-                              Editar dados do apoiador
-                            </Tooltip>
-                          }
-                        >
-                          <spam>
-                            <RiEditLine
-                              onClick={event => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                handleEditVoter(voter);
-                              }}
-                              style={{
-                                cursor: 'pointer',
-                                color: '#007bff',
-                                fontSize: '20px',
-                                marginRight: '10px'
-                              }}
-                            />
-                          </spam>
-                        </OverlayTrigger>
                       </div>
 
                       <div
@@ -379,76 +353,129 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                           display: 'flex',
                           float: 'right',
                           flexDirection: 'row',
-                          gap: '5px',
-                          marginRight: '10px'
+                          gap: '10px',
+                          marginRight: '10px',
+                          justifyContent: 'flex-start',
+                          alignItems: 'center'
                         }}
                       >
-                        {loadingInfos[voter.id] ? (
-                          <Spinner
-                            variant="success"
-                            style={{ width: '20px', height: '20px' }}
-                          />
-                        ) : (
-                          <OverlayTrigger
-                            placement="bottom-start"
-                            delay={{ show: 250, hide: 400 }}
-                            overlay={
-                              <Tooltip
-                                id={`tooltip-${voter.id}`}
-                                className="custom-tooltip-inner"
-                              >
-                                Buscar dados complementares
-                              </Tooltip>
-                            }
-                          >
-                            <span>
-                              <SiReacthookform
-                                onClick={event => {
-                                  event.preventDefault();
-                                  event.stopPropagation();
-                                  handleCompleteInfos(voter);
-                                }}
-                                style={{
-                                  fontSize: '18px',
-                                  color: 'green',
-                                  strokeWidth: '1px',
-                                  cursor: 'pointer'
-                                }}
+                        <OverlayTrigger
+                          placement="bottom-start"
+                          delay={{ show: 250, hide: 400 }}
+                          overlay={
+                            <Tooltip
+                              id={`tooltip-${voter.id}-delete`}
+                              className="custom-tooltip-inner"
+                              style={{
+                                display: voter.responseText ? undefined : 'none'
+                              }}
+                            >
+                              {voter.responseText}
+                            </Tooltip>
+                          }
+                        >
+                          <span>
+                            <div
+                              style={{
+                                color:
+                                  voter.situation !== null
+                                    ? getColor(voter.situation)
+                                    : voter.registryId
+                                    ? getColor('INCOMPLETO')
+                                    : getColor('NÃO VALIDADO'),
+                                border: `1px solid ${
+                                  voter.situation !== null
+                                    ? getColor(voter.situation)
+                                    : voter.registryId
+                                    ? getColor('INCOMPLETO')
+                                    : getColor('NÃO VALIDADO')
+                                }`,
+                                padding: '2px 10px',
+                                borderRadius: '10px',
+                                fontSize: '12px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                fontWeight: '900'
+                              }}
+                            >
+                              {voter.situation !== null
+                                ? voter.situation
+                                : voter.registryId
+                                ? 'INCOMPLETO'
+                                : 'NÃO VALIDADO'}
+                            </div>
+                          </span>
+                        </OverlayTrigger>
+                        {(voter.registryId === null ||
+                          voter.situation !== 'REGULAR') && (
+                          <>
+                            {loadingInfos[voter.id] ? (
+                              <Spinner
+                                variant="success"
+                                style={{ width: '20px', height: '20px' }}
                               />
-                            </span>
-                          </OverlayTrigger>
+                            ) : (
+                              <OverlayTrigger
+                                placement="bottom-start"
+                                delay={{ show: 250, hide: 400 }}
+                                overlay={
+                                  <Tooltip
+                                    id={`tooltip-${voter.id}`}
+                                    className="custom-tooltip-inner"
+                                  >
+                                    Buscar dados complementares
+                                  </Tooltip>
+                                }
+                              >
+                                <span style={{ width: '20px' }}>
+                                  <SiReacthookform
+                                    onClick={event => {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      handleSearchInfos(voter);
+                                    }}
+                                    style={{
+                                      fontSize: '18px',
+                                      color: 'green',
+                                      strokeWidth: '1px',
+                                      cursor: 'pointer'
+                                    }}
+                                  />
+                                </span>
+                              </OverlayTrigger>
+                            )}
+                            <OverlayTrigger
+                              placement="bottom-start"
+                              delay={{ show: 250, hide: 400 }}
+                              overlay={
+                                <Tooltip
+                                  id={`tooltip-${voter.id}`}
+                                  className="custom-tooltip-inner"
+                                >
+                                  Editar dados do apoiador
+                                </Tooltip>
+                              }
+                            >
+                              <spam style={{ width: '20px' }}>
+                                <RiEditLine
+                                  onClick={event => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    handleEditVoter(voter);
+                                  }}
+                                  style={{
+                                    cursor: 'pointer',
+                                    color: '#007bff',
+                                    fontSize: '20px',
+                                    marginRight: '10px'
+                                  }}
+                                />
+                              </spam>
+                            </OverlayTrigger>
+                          </>
                         )}
 
-                        <div
-                          style={{
-                            color:
-                              voter.situation !== null
-                                ? getColor(voter.situation)
-                                : voter.registryId
-                                ? getColor('INCOMPLETO')
-                                : getColor('NÃO VALIDADO'),
-                            border: `1px solid ${
-                              voter.situation !== null
-                                ? getColor(voter.situation)
-                                : voter.registryId
-                                ? getColor('INCOMPLETO')
-                                : getColor('NÃO VALIDADO')
-                            }`,
-                            padding: '2px 10px',
-                            borderRadius: '10px',
-                            fontSize: '12px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            fontWeight: '900'
-                          }}
-                        >
-                          {voter.situation !== null
-                            ? voter.situation
-                            : voter.registryId
-                            ? 'INCOMPLETO'
-                            : 'NÃO VALIDADO'}
-                        </div>
                         <OverlayTrigger
                           placement="bottom-start"
                           delay={{ show: 250, hide: 400 }}
@@ -461,7 +488,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                             </Tooltip>
                           }
                         >
-                          <span>
+                          <span style={{ width: '20px' }}>
                             <RiDeleteBin5Line
                               onClick={() => handleRemoveVoter(voter)}
                               style={{
