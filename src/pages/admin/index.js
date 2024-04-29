@@ -7,10 +7,9 @@ import PageVoter from '../../components/voter';
 import Pillar from '../../components/page/pillar';
 import GenderChart from '../../components/gender-chart';
 import NeighborhoodChart from '../../components/neighborhood-chart';
-import SchoolChart from '../../components/school-chart';
+import SchoolChart from '../../components/zone-chart';
 import { MdGroups } from 'react-icons/md';
-import { FaPercent } from 'react-icons/fa';
-import { FaHandshake } from 'react-icons/fa';
+import { FaPercent, FaHandshake, FaUserCheck } from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
 import styled from 'styled-components';
 
@@ -32,7 +31,7 @@ const CustomChartsContainer = styled.div`
   justify-content: center;
   align-items: center;
   width: 100%;
-    
+
   @media (max-width: 470px) {
     flex-direction: column;
   }
@@ -47,21 +46,23 @@ const PageAdmin = () => {
   const [dashboardData, setDashboardData] = useState(null);
 
   const genderData = [
-    dashboardData?.maleVoters || 0,
-    dashboardData?.femaleVoters || 0
+    dashboardData?.genderInfo?.maleVoters || 0,
+    dashboardData?.genderInfo?.femaleVoters || 0
   ];
+
   const neighborhoodData = {
     labels: ['Primavera', 'São João', 'Paraíso', 'Soberana'],
     values: [8, 16, 21, 27]
   };
-  const schollData = {
-    labels: ['Escola 1', 'Escola 2', 'Escola 3'],
-    values: [1, 2, 3]
+
+  const zoneData = {
+    labels: dashboardData?.zoneInfo?.labels || [],
+    values: dashboardData?.zoneInfo?.values || []
   };
 
   async function fetchDashboardData() {
     await api
-      .get(`/usersTC/dashboard`)
+      .get(`/votersTC/dashboard`)
       .then(response => {
         setDashboardData(response.data);
       })
@@ -87,96 +88,6 @@ const PageAdmin = () => {
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
-                backgroundColor: 'rgb(221 167 0)',
-                minWidth: '250px',
-                height: '50px',
-                borderRadius: '10px',
-                padding: '0 10px',
-                color: 'white',
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-around'
-              }}
-            >
-              <MdGroups style={{ height: '100%', width: '50px' }} />
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <span style={{ fontWeight: '800', fontSize: '24px' }}>
-                  {dashboardData?.groupMeta || 0}
-                </span>
-                <span style={{ fontSize: '14px' }}>Meta do grupo</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                border: '1px solid rgb(222, 226, 230)',
-                backgroundColor: '#70bf3b',
-                minWidth: '250px',
-                height: '50px',
-                borderRadius: '10px',
-                padding: '0 10px',
-                color: 'white',
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-around'
-              }}
-            >
-              <FaPercent style={{ height: '100%', width: '30px' }} />
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <span style={{ fontWeight: '800', fontSize: '24px' }}>
-                  {`${dashboardData?.percentMeta || 0}%`}
-                </span>
-                <span style={{ fontSize: '14px' }}>Meta atingida</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                border: '1px solid rgb(222, 226, 230)',
-                backgroundColor: '#6795f3',
-                minWidth: '250px',
-                height: '50px',
-                borderRadius: '10px',
-                padding: '0 10px',
-                color: 'white',
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-around'
-              }}
-            >
-              <FaHandshake style={{ height: '100%', width: '50px' }} />
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                <span style={{ fontWeight: '800', fontSize: '24px' }}>
-                  {dashboardData?.totalActiveVoters || 0}
-                </span>
-                <span style={{ fontSize: '14px' }}>Votos ganhos</span>
-              </div>
-            </div>
-
-            <div
-              style={{
-                border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#ef7878',
                 minWidth: '250px',
                 height: '50px',
@@ -198,7 +109,97 @@ const PageAdmin = () => {
                 }}
               >
                 <span style={{ fontWeight: '800', fontSize: '24px' }}>
-                  {dashboardData?.totalActiveVoters || 0}
+                  {dashboardData?.metaInfo?.groupMeta || 0}
+                </span>
+                <span style={{ fontSize: '14px' }}>Meta do grupo</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: '1px solid rgb(222, 226, 230)',
+                backgroundColor: '#dda700',
+                minWidth: '250px',
+                height: '50px',
+                borderRadius: '10px',
+                padding: '0 10px',
+                color: 'white',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around'
+              }}
+            >
+              <FaPercent style={{ height: '100%', width: '25px' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
+                  {`${dashboardData?.metaInfo?.percentMeta || 0}%`}
+                </span>
+                <span style={{ fontSize: '14px' }}>Meta atingida</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: '1px solid rgb(222, 226, 230)',
+                backgroundColor: '#70bf3b',
+                minWidth: '250px',
+                height: '50px',
+                borderRadius: '10px',
+                padding: '0 10px',
+                color: 'white',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around'
+              }}
+            >
+              <FaUserCheck style={{ height: '100%', width: '34px' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
+                  {dashboardData?.votersInfo?.totalValidatedVoters || 0}
+                </span>
+                <span style={{ fontSize: '14px' }}>Apoiadores validados</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: '1px solid rgb(222, 226, 230)',
+                backgroundColor: '#6795f3',
+                minWidth: '250px',
+                height: '50px',
+                borderRadius: '10px',
+                padding: '0 10px',
+                color: 'white',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around'
+              }}
+            >
+              <FaHandshake style={{ height: '100%', width: '45px' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
+                  {dashboardData?.votersInfo?.totalActiveVoters || 0}
                 </span>
                 <span style={{ fontSize: '14px' }}>Votos possíveis</span>
               </div>
@@ -208,7 +209,7 @@ const PageAdmin = () => {
           <CustomChartsContainer>
             <GenderChart data={genderData} />
             <NeighborhoodChart data={neighborhoodData} />
-            <SchoolChart data={schollData} />
+            <SchoolChart data={zoneData} />
           </CustomChartsContainer>
         </div>
 

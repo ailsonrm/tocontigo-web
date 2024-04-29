@@ -8,13 +8,16 @@ import {
   Form,
   Spinner,
   Tooltip,
-  OverlayTrigger
+  OverlayTrigger,
+  ButtonGroup
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
 import { FaUserCheck } from 'react-icons/fa';
 import { RiDeleteBin5Line, RiEditLine } from 'react-icons/ri';
+import { LuRefreshCw } from 'react-icons/lu';
+
 import {
   Formik,
   Field,
@@ -148,35 +151,35 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   async function handleSearchInfos(voter) {
-    //showSnackbar("Funcionalidade em manutenção!!!", 'error');
-    setLoadingInfos(prevLoadingInfos => ({
-      ...prevLoadingInfos,
-      [voter.id]: true
-    }));
+    showSnackbar("Funcionalidade em manutenção!!!", 'error');
+    // setLoadingInfos(prevLoadingInfos => ({
+    //   ...prevLoadingInfos,
+    //   [voter.id]: true
+    // }));
 
-    var formattedValues = {
-      nome: voter.name,
-      dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD'),
-      //dataNascimento: moment(voter.birthDate).utc().format('DD/MM/YYYY')
-      nomeMae: voter.motherName
-    };
+    // var formattedValues = {
+    //   id: voter.id,
+    //   nome: voter.name,
+    //   dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD'),
+    //   nomeMae: voter.motherName,
+    //   nroTitulo: voter.registryId
+    // };
 
-    api
-      .patch('/votersTC/searchInfos', formattedValues)
-      .then(r => {
-        fetchDashboardData();
-        handleSupplementInfos(voter, r.data);
-      })
-      .catch(error => {
-        console.error('Erro na API', error.response.data.error);
-        showSnackbar(error.response.data.error, 'error');
-      })
-      .finally(() =>
-        setLoadingInfos(prevLoadingInfos => ({
-          ...prevLoadingInfos,
-          [voter.id]: false
-        }))
-      );
+    // api
+    //   .patch('/votersTC/searchInfos', formattedValues)
+    //   .then(r => {
+    //     handleSupplementInfos(voter, { situacao: 'Na fila para validação' });
+    //   })
+    //   .catch(error => {
+    //     console.error('Erro na API', error.response.data.error);
+    //     showSnackbar(error.response.data.error, 'error');
+    //   })
+    //   .finally(() =>
+    //     setLoadingInfos(prevLoadingInfos => ({
+    //       ...prevLoadingInfos,
+    //       [voter.id]: false
+    //     }))
+    //   );
   }
 
   async function handleEditVoter(voter) {
@@ -185,12 +188,12 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   const handleUpdateVoter = async (values, { setSubmitting, resetForm }) => {
-    const formattedBirthDate = moment(values.dataNascimento).toISOString();
+    //const formattedBirthDate = moment(values.dataNascimento).toISOString();
     var updateVoterData = {
       id: values.id,
       name: values.nome,
       motherName: values.nomeMae,
-      birthDate: formattedBirthDate,
+      birthDate: values.dataNascimento,
       gender: values.genero,
       cellPhone: cleanPhoneNumber(values.celular)
     };
@@ -236,9 +239,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       place: complementInfos.local,
       placeAddress: complementInfos.endereco,
       placeDistrict: complementInfos.municipio,
-      situation: complementInfos.error
-        ? complementInfos.error
-        : complementInfos.situacao,
+      situation: complementInfos.situacao,
       responseText: complementInfos.responseText
     };
 
@@ -258,7 +259,6 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   const getColor = situation => {
     switch (situation) {
       case 'REGULAR':
-      case 'QUITE':
         return '#008000';
       case 'CANCELADO':
       case 'SUSPENSO':
@@ -272,10 +272,10 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         if (situation.startsWith('Dados não conferem')) {
           return '#f94848';
         }
-        if (situation.startsWith('Local votação - OK')) {
+        if (situation === 'Na fila para validação') {
           return '#ff993e';
         }
-        return 'black';
+        return '#007bff';
     }
   };
 
@@ -289,24 +289,46 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         gap: '10px'
       }}
     >
-      <Button
-        variant="outline-success"
-        onClick={handleShowModal}
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          gap: '10px'
-        }}
-      >
-        Novo apoiador
-        <FaUserCheck
+      <ButtonGroup>
+        <Button
+          variant="outline-success"
+          onClick={handleShowModal}
           style={{
-            fontSize: 20
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
           }}
-        />
-      </Button>
+        >
+          Novo apoiador
+          <FaUserCheck
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+        <Button
+          variant="outline-success"
+          onClick={() => {
+            fetchVoters();
+            fetchDashboardData();
+          }}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
+          }}
+        >
+          <LuRefreshCw
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+      </ButtonGroup>
 
       {voters.length > 0 ? (
         <div
@@ -390,7 +412,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                                     ? getColor('INCOMPLETO')
                                     : getColor('NÃO VALIDADO')
                                 }`,
-                                padding: '2px 10px',
+                                padding: '2px 10px 1px 10px',
                                 borderRadius: '10px',
                                 fontSize: '12px',
                                 display: 'flex',

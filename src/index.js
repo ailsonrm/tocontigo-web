@@ -8,12 +8,10 @@ import UserProvider from './providers/ContextUser';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <StrictMode>
-    <BrowserRouter>
-      <UserProvider>
-        <GlobalStyle />
-        <App />
-      </UserProvider>
-    </BrowserRouter>
-  </StrictMode>
+  <BrowserRouter>
+    <UserProvider>
+      <GlobalStyle />
+      <App />
+    </UserProvider>
+  </BrowserRouter>
 );

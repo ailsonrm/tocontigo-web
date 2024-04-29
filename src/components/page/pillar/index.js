@@ -71,6 +71,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         setShowModal(false);
         showSnackbar('Pilar cadastrado com sucesso!', 'success');
         fetchPilars();
+        fetchDashboardData();
       })
       .catch(error => {
         console.error('Erro na API', error.response.data.error);
@@ -85,7 +86,6 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       .then(response => {
         setPillars([]);
         setPillars(response.data);
-        fetchDashboardData();
       })
       .catch(() => {})
       .finally(() => {});
@@ -113,7 +113,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     ) {
       return 0;
     }
-    return (totalVoters * 100) / meta;
+    return ((totalVoters * 100) / meta.toFixed(2)).toFixed(2);
   }
 
   return (
