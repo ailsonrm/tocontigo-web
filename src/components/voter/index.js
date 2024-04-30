@@ -30,6 +30,7 @@ import { api } from '../../providers/apiClient';
 import noResultsImg from '../../assets/noResults.png';
 import { SiReacthookform } from 'react-icons/si';
 import { FaSpinner } from 'react-icons/fa6';
+import Search from '../../components/search';
 
 moment();
 
@@ -100,6 +101,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   const { role } = currentUser;
   const [showModal, setShowModal] = useState(false);
   const [voters, setVoters] = useState([]);
+  const [searchVoterResult, setSearchVoterResult] = useState([]);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
   const [loadingInfos, setLoadingInfos] = useState({});
@@ -149,6 +151,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       .then(response => {
         setVoters([]);
         setVoters(response.data);
+        setSearchVoterResult(response.data)
       })
       .catch(() => {})
       .finally(() => {});
@@ -323,6 +326,12 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         gap: '10px'
       }}
     >
+      <Search
+        data={voters}
+        fields={['name', 'email']}
+        placeholder="Busque por apoiadores..."
+        setSearchResult={setSearchVoterResult}
+      />
       <ButtonGroup>
         <Button
           variant="outline-success"
@@ -364,7 +373,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
         </Button>
       </ButtonGroup>
 
-      {voters.length > 0 ? (
+      {searchVoterResult.length > 0 ? (
         <div
           style={{
             width: '100%',
@@ -375,7 +384,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
             gap: '5px'
           }}
         >
-          {[...voters]
+          {[...searchVoterResult]
             .sort((a, b) => a.name.localeCompare(b.name))
             .map((voter, index) => (
               <Accordion

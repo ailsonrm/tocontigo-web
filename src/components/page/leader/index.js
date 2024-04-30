@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Modal, Form, Card, ButtonGroup} from 'react-bootstrap';
+import { Button, Modal, Form, Card, ButtonGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../page';
 import { ContextUser } from '../../../providers/ContextUser';
@@ -16,6 +16,7 @@ import {
 import * as Yup from 'yup';
 import { api } from '../../../providers/apiClient';
 import noResultsImg from '../../../assets/noResults.png';
+import Search from '../../search';
 
 const EmptyContainer = styled.div`
   width: 100%;
@@ -38,10 +39,11 @@ const validationSchema = Yup.object().shape({
   managedBy: Yup.string().required('Responsável é obrigatório')
 });
 
-const Leader = ({ managedBy, fetchDashboardData}) => {
+const Leader = ({ managedBy, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const [showModal, setShowModal] = useState(false);
   const [leaders, setLeaders] = useState([]);
+  const [searchLeaderResult, setSearchLeaderResult] = useState([]);
 
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -86,6 +88,7 @@ const Leader = ({ managedBy, fetchDashboardData}) => {
       .then(response => {
         setLeaders([]);
         setLeaders(response.data);
+        setSearchLeaderResult(response.data);
       })
       .catch(() => {})
       .finally(() => {});
@@ -118,7 +121,21 @@ const Leader = ({ managedBy, fetchDashboardData}) => {
   }
 
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        gap: '10px'
+      }}
+    >
+      <Search
+        data={leaders}
+        fields={['name', 'email']}
+        placeholder="Busque por lideranças..."
+        setSearchResult={setSearchLeaderResult}
+      />
       <ButtonGroup>
         <Button
           variant="outline-success"
@@ -160,7 +177,7 @@ const Leader = ({ managedBy, fetchDashboardData}) => {
         </Button>
       </ButtonGroup>
 
-      {leaders.length > 0 ? (
+      {searchLeaderResult.length > 0 ? (
         <div
           style={{
             display: 'flex',
@@ -169,8 +186,18 @@ const Leader = ({ managedBy, fetchDashboardData}) => {
             gap: '10px'
           }}
         >
-          {[...leaders]
-            .sort((a, b) => a.name.localeCompare(b.name))
+          {[...searchLeaderResult]
+            .sort((a, b) => {
+              const totalVotersA = sumAllOwnedVoters(
+                a.manages,
+                a.ownedVoters.length
+              );
+              const totalVotersB = sumAllOwnedVoters(
+                b.manages,
+                b.ownedVoters.length
+              );
+              return totalVotersB - totalVotersA;
+            })
             .map((leader, index) => (
               <div key={leader.id} style={{ width: '311px' }}>
                 <Card>

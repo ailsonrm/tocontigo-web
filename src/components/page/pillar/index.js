@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Modal, Form, Card, ButtonGroup} from 'react-bootstrap';
+import { Button, Modal, Form, Card, ButtonGroup } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '..';
 import { ContextUser } from '../../../providers/ContextUser';
@@ -16,6 +16,7 @@ import {
 import * as Yup from 'yup';
 import { api } from '../../../providers/apiClient';
 import noResultsImg from '../../../assets/noResults.png';
+import Search from '../../search';
 
 const EmptyContainer = styled.div`
   width: 100%;
@@ -42,6 +43,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const [showModal, setShowModal] = useState(false);
   const [pillars, setPillars] = useState([]);
+  const [searchPillarResult, setSearchPilllarResult] = useState([]);
 
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -87,6 +89,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       .then(response => {
         setPillars([]);
         setPillars(response.data);
+        setSearchPilllarResult(response.data);
       })
       .catch(() => {})
       .finally(() => {});
@@ -127,6 +130,12 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         gap: '10px'
       }}
     >
+      <Search
+        data={pillars}
+        fields={['name', 'email']}
+        placeholder="Busque por pilares..."
+        setSearchResult={setSearchPilllarResult}
+      />
       <ButtonGroup>
         <Button
           variant="outline-success"
@@ -168,7 +177,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         </Button>
       </ButtonGroup>
 
-      {pillars.length > 0 ? (
+      {searchPillarResult.length > 0 ? (
         <div
           style={{
             display: 'flex',
@@ -177,8 +186,18 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             gap: '10px'
           }}
         >
-          {[...pillars]
-            .sort((a, b) => a.name.localeCompare(b.name))
+          {[...searchPillarResult]
+            .sort((a, b) => {
+              const totalVotersA = sumAllOwnedVoters(
+                a.manages,
+                a.ownedVoters.length
+              );
+              const totalVotersB = sumAllOwnedVoters(
+                b.manages,
+                b.ownedVoters.length
+              );
+              return totalVotersB - totalVotersA;
+            })
             .map((pillar, index) => (
               <div key={pillar.id} style={{ width: '311px' }}>
                 <Card>
