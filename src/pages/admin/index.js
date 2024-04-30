@@ -5,6 +5,7 @@ import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
 import PageVoter from '../../components/voter';
 import Pillar from '../../components/page/pillar';
+import Leader from '../../components/page/leader';
 import GenderChart from '../../components/gender-chart';
 import NeighborhoodChart from '../../components/neighborhood-chart';
 import SchoolChart from '../../components/zone-chart';
@@ -227,11 +228,30 @@ const PageAdmin = () => {
                 border: '1px solid #dee2e6',
                 borderTop: '0px',
                 marginTop: 0,
+                marginBottom: '10px',
                 borderBottomLeftRadius: '5px',
                 borderBottomRightRadius: '5px'
               }}
             >
               <Pillar
+                managedBy={currentUser?.id}
+                fetchDashboardData={fetchDashboardData}
+              />
+            </Tab>
+            <Tab
+              eventKey="leaders"
+              title="Lideranças"
+              style={{
+                padding: '10px',
+                border: '1px solid #dee2e6',
+                borderTop: '0px',
+                marginTop: 0,
+                marginBottom: '10px',
+                borderBottomLeftRadius: '5px',
+                borderBottomRightRadius: '5px'
+              }}
+            >
+              <Leader
                 managedBy={currentUser?.id}
                 fetchDashboardData={fetchDashboardData}
               />
@@ -244,6 +264,7 @@ const PageAdmin = () => {
                 border: '1px solid #dee2e6',
                 borderTop: '0px',
                 marginTop: 0,
+                marginBottom: '10px',
                 borderBottomLeftRadius: '5px',
                 borderBottomRightRadius: '5px'
               }}

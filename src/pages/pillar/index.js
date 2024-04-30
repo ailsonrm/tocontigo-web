@@ -29,6 +29,7 @@ const PagePillar = () => {
                 border: '1px solid #dee2e6',
                 borderTop: '0px',
                 marginTop: 0,
+                marginBottom: '10px',
                 borderBottomLeftRadius: '5px',
                 borderBottomRightRadius: '5px'
               }}
@@ -43,6 +44,7 @@ const PagePillar = () => {
                 border: '1px solid #dee2e6',
                 borderTop: '0px',
                 marginTop: 0,
+                marginBottom: '10px',
                 borderBottomLeftRadius: '5px',
                 borderBottomRightRadius: '5px'
               }}

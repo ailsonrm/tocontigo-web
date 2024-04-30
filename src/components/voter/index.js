@@ -48,6 +48,10 @@ const EmptyMsg = styled.h2`
   margin-bottom: 20px;
 `;
 
+const ResponsibleDesc = styled.span`
+  font-size: 14px;
+`;
+
 const validationSchema = Yup.object().shape({
   nome: Yup.string().required('Nome é obrigatório'),
   nomeMae: Yup.string().required('Nome da mãe é obrigatório'),
@@ -151,7 +155,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   async function handleSearchInfos(voter) {
-    showSnackbar("Funcionalidade em manutenção!!!", 'error');
+    showSnackbar('Funcionalidade em manutenção!!!', 'error');
     // setLoadingInfos(prevLoadingInfos => ({
     //   ...prevLoadingInfos,
     //   [voter.id]: true
@@ -279,6 +283,36 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
     }
   };
 
+  const getValidVoter = placeDistrict => {
+    return (
+      placeDistrict === null ||
+      placeDistrict.toLowerCase().includes('guarulhos')
+    );
+  };
+
+  function getResponsibleDesc(voter) {
+    const roleDescriptions = {
+      ADMIN: '',
+      PILLAR: 'Pilar',
+      LEADER: 'Líder'
+    };
+
+    const personDesc = `${
+      roleDescriptions[voter.role.name]
+        ? roleDescriptions[voter.role.name] + ': '
+        : ''
+    }${voter.name.trim()}`;
+
+    let managerDesc = '';
+    if (voter.manager && roleDescriptions[voter.manager.role.name]) {
+      managerDesc = `${
+        roleDescriptions[voter.manager.role.name]
+      }: ${voter.manager.name.trim()}`;
+    }
+
+    return managerDesc ? `${managerDesc} / ${personDesc}` : personDesc;
+  }
+
   return (
     <div
       style={{
@@ -364,10 +398,20 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                           flexDirection: 'row',
                           justifyContent: 'flex-start',
                           alignItems: 'center',
-                          gap: '5px'
+                          gap: '5px',
+                          color: getValidVoter(voter.placeDistrict)
+                            ? undefined
+                            : '#f94848',
+                          fontWeight: getValidVoter(voter.placeDistrict)
+                            ? undefined
+                            : 'bold'
                         }}
                       >
-                        {voter.name}
+                        {`#${voter.id} - ${voter.name}${
+                          getValidVoter(voter.placeDistrict)
+                            ? ''
+                            : ' - (local inválido)'
+                        }`}
                       </div>
 
                       <div
@@ -479,7 +523,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                                 </Tooltip>
                               }
                             >
-                              <spam style={{ width: '20px' }}>
+                              <span style={{ width: '20px' }}>
                                 <RiEditLine
                                   onClick={event => {
                                     event.preventDefault();
@@ -493,7 +537,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                                     marginRight: '10px'
                                   }}
                                 />
-                              </spam>
+                              </span>
                             </OverlayTrigger>
                           </>
                         )}
@@ -595,6 +639,16 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                       </label>
                       <span>{voter.section} </span>
                     </div>
+                    {role.name === 'ADMIN' && (
+                      <div>
+                        <hr style={{ margin: '2px' }} />
+                        <div>
+                          <ResponsibleDesc>
+                            {getResponsibleDesc(voter.owner)}
+                          </ResponsibleDesc>
+                        </div>
+                      </div>
+                    )}
                   </Accordion.Body>
                 </Accordion.Item>
               </Accordion>

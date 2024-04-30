@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Modal, Form, Card } from 'react-bootstrap';
+import { Button, Modal, Form, Card, ButtonGroup} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '..';
 import { ContextUser } from '../../../providers/ContextUser';
 import { FaUserShield } from 'react-icons/fa';
+import { LuRefreshCw } from 'react-icons/lu';
 import {
   Formik,
   Field,
@@ -117,26 +118,55 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
   }
 
   return (
-    <div>
-      <Button
-        variant="outline-success"
-        onClick={handleShowModal}
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '10px'
-        }}
-      >
-        Novo Pilar
-        <FaUserShield
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        gap: '10px'
+      }}
+    >
+      <ButtonGroup>
+        <Button
+          variant="outline-success"
+          onClick={handleShowModal}
           style={{
-            fontSize: 20
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
           }}
-        />
-      </Button>
+        >
+          Novo Pilar
+          <FaUserShield
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+        <Button
+          variant="outline-success"
+          onClick={() => {
+            fetchPilars();
+            fetchDashboardData();
+          }}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
+          }}
+        >
+          <LuRefreshCw
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+      </ButtonGroup>
 
       {pillars.length > 0 ? (
         <div
@@ -173,10 +203,12 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       {pillar.email}
                     </Card.Subtitle>
                     <Card.Text
+                      as="div"
                       style={{
                         display: 'flex',
                         flexDirection: 'row',
-                        justifyContent: 'space-between'
+                        justifyContent: 'space-between',
+                        id: 'pillars'
                       }}
                     >
                       <div>

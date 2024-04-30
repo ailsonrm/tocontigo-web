@@ -1,10 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Modal, Form, Card } from 'react-bootstrap';
+import { Button, Modal, Form, Card, ButtonGroup} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../page';
 import { ContextUser } from '../../../providers/ContextUser';
 import { FaUsers } from 'react-icons/fa';
+import { LuRefreshCw } from 'react-icons/lu';
 import {
   Formik,
   Field,
@@ -37,7 +38,7 @@ const validationSchema = Yup.object().shape({
   managedBy: Yup.string().required('Responsável é obrigatório')
 });
 
-const Leader = ({ managedBy }) => {
+const Leader = ({ managedBy, fetchDashboardData}) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const [showModal, setShowModal] = useState(false);
   const [leaders, setLeaders] = useState([]);
@@ -118,25 +119,46 @@ const Leader = ({ managedBy }) => {
 
   return (
     <div>
-      <Button
-        variant="outline-success"
-        onClick={handleShowModal}
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'flex-start',
-          alignItems: 'center',
-          gap: '10px',
-          marginBottom: '10px'
-        }}
-      >
-        Novo Líder
-        <FaUsers
+      <ButtonGroup>
+        <Button
+          variant="outline-success"
+          onClick={handleShowModal}
           style={{
-            fontSize: 20
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
           }}
-        />
-      </Button>
+        >
+          Novo Líder
+          <FaUsers
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+        <Button
+          variant="outline-success"
+          onClick={() => {
+            fetchLeaders();
+            fetchDashboardData();
+          }}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '10px'
+          }}
+        >
+          <LuRefreshCw
+            style={{
+              fontSize: 20
+            }}
+          />
+        </Button>
+      </ButtonGroup>
 
       {leaders.length > 0 ? (
         <div
