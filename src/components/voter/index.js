@@ -54,11 +54,12 @@ const ResponsibleDesc = styled.span`
 `;
 
 const validationSchema = Yup.object().shape({
-  nome: Yup.string().required('Nome é obrigatório'),
-  nomeMae: Yup.string().required('Nome da mãe é obrigatório'),
-  dataNascimento: Yup.date().required('Data de nascimento é obrigatória'),
-  genero: Yup.string().required('Gênero é obrigatório'),
-  ownerId: Yup.number().required('Responsável é obrigatório')
+  nome: Yup.string().required('Nome obrigatório'),
+  nomeMae: Yup.string().required('Nome da mãe obrigatório'),
+  dataNascimento: Yup.date().required('Data de nascimento obrigatória'),
+  genero: Yup.string().required('Gênero obrigatório'),
+  ownerId: Yup.number().required('Responsável obrigatório'),
+  cellPhone: Yup.string().required('Celular obrigatório')
 });
 
 const VoterInfoContainer = styled.div`
@@ -126,7 +127,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       motherName: values.nomeMae,
       birthDate: values.dataNascimento,
       gender: values.genero,
-      cellPhone: cleanPhoneNumber(values.celular)
+      cellPhone: values.celular
     };
 
     const response = await api
@@ -202,7 +203,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       motherName: values.nomeMae,
       birthDate: values.dataNascimento,
       gender: values.genero,
-      cellPhone: cleanPhoneNumber(values.celular)
+      cellPhone: values.celular
     };
 
     api
@@ -751,11 +752,11 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                     <Field
                       as={Form.Control}
                       type="text"
-                      name="celular"
-                      isInvalid={!!errors.celular && touched.celular}
+                      name="cellPhone"
+                      isInvalid={!!errors.cellPhone && touched.cellPhone}
                     />
                     <Form.Control.Feedback type="invalid">
-                      {errors.celular}
+                      {errors.cellPhone}
                     </Form.Control.Feedback>
                   </Form.Group>
                 </div>
@@ -878,6 +879,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
           )}
         </Modal.Body>
       </Modal>
+
     </div>
   );
 };

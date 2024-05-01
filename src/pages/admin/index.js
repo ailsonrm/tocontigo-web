@@ -14,6 +14,7 @@ import { MdGroups } from 'react-icons/md';
 import { FaPercent, FaHandshake, FaUserCheck } from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
 import styled from 'styled-components';
+import GridManagement from '../../components/grid-management';
 
 const CustomCounter = styled.div`
   display: flex;
@@ -42,7 +43,7 @@ const CustomChartsContainer = styled.div`
 const PageAdmin = () => {
   const { currentUser } = useContext(ContextUser);
   const navigate = useNavigate();
-  const [tab, setTab] = useState('pillars');
+  const [tab, setTab] = useState('management');
   const [isFetching, setIsFetching] = useState(true);
   const [groupMeta, setGroupMeta] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
@@ -98,7 +99,7 @@ const PageAdmin = () => {
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
-                backgroundColor: '#ef7878',
+                backgroundColor: '#ff9142',
                 minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
@@ -188,6 +189,37 @@ const PageAdmin = () => {
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
+                backgroundColor: '#ef7878',
+                minWidth: '250px',
+                height: '50px',
+                borderRadius: '10px',
+                padding: '0 10px',
+                color: 'white',
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-around'
+              }}
+            >
+              <FaHandshake style={{ height: '100%', width: '45px' }} />
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <span style={{ fontWeight: '800', fontSize: '24px' }}>
+                  {dashboardData?.votersInfo?.totalActiveVoters -
+                    dashboardData?.votersInfo?.totalValidatedVoters || 0}
+                </span>
+                <span style={{ fontSize: '14px' }}>Apoiadore não validados</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#6795f3',
                 minWidth: '250px',
                 height: '50px',
@@ -229,6 +261,21 @@ const PageAdmin = () => {
             activeKey={tab}
             onSelect={currentTab => setTab(currentTab)}
           >
+            <Tab
+              eventKey="management"
+              title="Gestão"
+              style={{
+                padding: '10px',
+                border: '1px solid #dee2e6',
+                borderTop: '0px',
+                marginTop: 0,
+                marginBottom: '10px',
+                borderBottomLeftRadius: '5px',
+                borderBottomRightRadius: '5px'
+              }}
+            >
+              <GridManagement voterList={voters} />
+            </Tab>
             <Tab
               eventKey="pillars"
               title="Pilares"
