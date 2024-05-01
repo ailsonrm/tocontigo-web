@@ -8,7 +8,8 @@ import Pillar from '../../components/page/pillar';
 import Leader from '../../components/page/leader';
 import GenderChart from '../../components/gender-chart';
 import NeighborhoodChart from '../../components/neighborhood-chart';
-import SchoolChart from '../../components/zone-chart';
+import AgeChart from '../../components/age-chart';
+import ZoneChart from '../../components/zone-chart';
 import { MdGroups } from 'react-icons/md';
 import { FaPercent, FaHandshake, FaUserCheck } from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
@@ -45,30 +46,24 @@ const PageAdmin = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [groupMeta, setGroupMeta] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
+  const [voters, setVoters] = useState([]);
+
+  function fetchVoters() {
+    api
+      .get('/votersTC')
+      .then(response => {
+        setVoters([]);
+        setVoters(response.data);
+        setSearchVoterResult(response.data);
+      })
+      .catch(() => {})
+      .finally(() => {});
+  }
 
   const genderData = [
     dashboardData?.genderInfo?.maleVoters || 0,
     dashboardData?.genderInfo?.femaleVoters || 0
   ];
-
-  // const neighborhoodData = {
-  //   labels: ['Primavera', 'São João', 'Paraíso', 'Soberana'],
-  //   values: [8, 16, 21, 27]
-  // };
-
-  const neighborhoodData = {
-    labels: [
-      'Bairro 1', 'Bairro 2', 'Bairro 3', 'Bairro 4', 'Bairro 5',
-      'Bairro 6', 'Bairro 7', 'Bairro 8', 'Bairro 9', 'Bairro 10',
-      'Bairro 11', 'Bairro 12', 'Bairro 13', 'Bairro 14', 'Bairro 15',
-      'Bairro 16', 'Bairro 17', 'Bairro 18', 'Bairro 19', 'Bairro 20',
-      'Bairro 21', 'Bairro 22', 'Bairro 23', 'Bairro 24', 'Bairro 25'
-    ],
-    values: [
-      48, 19, 15, 23, 11, 27, 35, 7, 27, 31, 36, 40, 47, 2, 37, 21, 50, 8, 17, 40,
-      36, 43, 0, 26, 46
-    ]
-  };
 
   const zoneData = {
     labels: dashboardData?.zoneInfo?.labels || [],
@@ -223,8 +218,8 @@ const PageAdmin = () => {
 
           <CustomChartsContainer>
             <GenderChart data={genderData} />
-            <NeighborhoodChart data={neighborhoodData} />
-            <SchoolChart data={zoneData} />
+            <AgeChart data={voters} />
+            <ZoneChart data={zoneData} />
           </CustomChartsContainer>
         </div>
 
@@ -284,6 +279,8 @@ const PageAdmin = () => {
               }}
             >
               <PageVoter
+                voters={voters}
+                fetchVoters={fetchVoters}
                 ownerId={currentUser?.id}
                 fetchDashboardData={fetchDashboardData}
               />

@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import PrivateRoute from './private-route';
+import PublicRoute from './public-route';
 import PageAuth from '../pages/auth';
 import PageAdmin from '../pages/admin';
 import PagePillar from '../pages/pillar';
@@ -16,7 +17,17 @@ const AppRoutes = () => (
       }
     />
 
-    <Route path="/acessar" element={<PageAuth />} />
+
+    {/* <Route path="/acessar" element={<PageAuth />} /> */}
+
+    <Route
+      path="/acessar"
+      element={
+        <PublicRoute>
+          <PageAuth />
+        </PublicRoute>
+      }
+    />
 
     <Route
       path="/admin"

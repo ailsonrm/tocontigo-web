@@ -5,12 +5,26 @@ import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
 import PageVoter from '../../components/voter';
 import Leader from '../../components/page/leader';
+import { api } from '../../providers/apiClient';
 
 const PagePillar = () => {
   const { currentUser } = useContext(ContextUser);
   const navigate = useNavigate();
   const [tab, setTab] = useState('leaders');
   const [isFetching, setIsFetching] = useState(true);
+  const [voters, setVoters] = useState([]);
+
+  function fetchVoters() {
+    api
+      .get('/votersTC')
+      .then(response => {
+        setVoters([]);
+        setVoters(response.data);
+        setSearchVoterResult(response.data);
+      })
+      .catch(() => {})
+      .finally(() => {});
+  }
 
   return (
     <>
@@ -34,7 +48,7 @@ const PagePillar = () => {
                 borderBottomRightRadius: '5px'
               }}
             >
-              <Leader managedBy={currentUser?.id}/>
+              <Leader managedBy={currentUser?.id} />
             </Tab>
             <Tab
               eventKey="voters"
@@ -49,7 +63,11 @@ const PagePillar = () => {
                 borderBottomRightRadius: '5px'
               }}
             >
-              <PageVoter ownerId={currentUser?.id} />
+              <PageVoter
+                voters={voters}
+                fetchVoters={fetchVoters}
+                ownerId={currentUser?.id}
+              />
             </Tab>
           </Tabs>
         </div>

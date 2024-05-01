@@ -96,11 +96,11 @@ const cleanPhoneNumber = phoneNumber => {
   return phoneNumber.replace(/\D/g, '');
 };
 
-const PageVoter = ({ ownerId, fetchDashboardData }) => {
+const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const { role } = currentUser;
   const [showModal, setShowModal] = useState(false);
-  const [voters, setVoters] = useState([]);
+  //const [voters, setVoters] = useState([]);
   const [searchVoterResult, setSearchVoterResult] = useState([]);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -145,17 +145,17 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
     setSubmitting(false);
   };
 
-  function fetchVoters() {
-    api
-      .get('/votersTC')
-      .then(response => {
-        setVoters([]);
-        setVoters(response.data);
-        setSearchVoterResult(response.data);
-      })
-      .catch(() => {})
-      .finally(() => {});
-  }
+  // function fetchVoters() {
+  //   api
+  //     .get('/votersTC')
+  //     .then(response => {
+  //       setVoters([]);
+  //       setVoters(response.data);
+  //       setSearchVoterResult(response.data);
+  //     })
+  //     .catch(() => {})
+  //     .finally(() => {});
+  // }
 
   async function handleSearchInfos(voter) {
     showSnackbar('Funcionalidade em manutenção!!!', 'error');

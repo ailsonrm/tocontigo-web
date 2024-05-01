@@ -30,8 +30,8 @@ const GenderChart = ({ data }) => {
       {
         label: 'Distribuição de Gênero',
         data: data,
-        backgroundColor: ['#4472C4', 'rgba(255, 99, 132, 0.6)'],
-        borderColor: ['#4472C4', 'rgba(255, 99, 132, 1)'],
+        backgroundColor: ['#86C7F3', '#ffa1b5'],
+        borderColor: ['#86C7F3', '#ffa1b5'],
         borderWidth: 1
       }
     ],

@@ -18,19 +18,6 @@ const PrivateRoute = ({ children }) => {
     return <Navigate to="/acessar" replace />;
   }
 
-  //let userLocationPermited = getRedirectUrl(currentUser?.role);
-
-  //const lastIndex = userLocationPermited.lastIndexOf('/');
-  //userLocationPermited = userLocationPermited.substring(0, lastIndex + 1);
-
-  // if (!currentLocation.includes(userLocationPermited)) {
-  //   return (
-  //     <Layout>
-  //       <PageUnauthorized />
-  //     </Layout>
-  //   );
-  // }
-
   return <Layout>{children}</Layout>;
 };
 export default PrivateRoute;
