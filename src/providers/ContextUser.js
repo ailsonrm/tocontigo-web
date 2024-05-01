@@ -116,7 +116,7 @@ const UserProvider = ({ children }) => {
 
         navigate(getRedirectUrl(user.role.name));
       })
-      .catch(() => showSnackbar('Credenciais não encontradas.', 'error'));
+      .catch(error => showSnackbar(error.response.data.error, 'error'));
   };
 
   const handleForgot = async email => {
@@ -125,7 +125,7 @@ const UserProvider = ({ children }) => {
       .then(() => {
         showSnackbar('Enviamos um e-mail para redefinir sua senha.', 'success');
       })
-      .catch(() => showSnackbar('Usuário não encontrado.', 'error'));
+      .catch(error => showSnackbar(error.response.data.error, 'error'));
   };
 
   const handleReset = async (token, newPassword) => {
@@ -135,7 +135,7 @@ const UserProvider = ({ children }) => {
         enqueueSnackbar('Sua senha foi redefinida com sucesso.');
         navigate('/acessar');
       })
-      .catch(() => showSnackbar('Erro ao redefinir senha.', 'error'));
+      .catch(error => showSnackbar(error.response.data.error, 'error'));
   };
 
   const handleLogout = () => {

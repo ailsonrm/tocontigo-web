@@ -58,7 +58,7 @@ const validationSchema = Yup.object().shape({
   nomeMae: Yup.string().required('Nome da mãe é obrigatório'),
   dataNascimento: Yup.date().required('Data de nascimento é obrigatória'),
   genero: Yup.string().required('Gênero é obrigatório'),
-  ownerId: Yup.string().required('Responsável é obrigatório')
+  ownerId: Yup.number().required('Responsável é obrigatório')
 });
 
 const VoterInfoContainer = styled.div`
@@ -151,7 +151,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
       .then(response => {
         setVoters([]);
         setVoters(response.data);
-        setSearchVoterResult(response.data)
+        setSearchVoterResult(response.data);
       })
       .catch(() => {})
       .finally(() => {});
@@ -195,7 +195,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
   }
 
   const handleUpdateVoter = async (values, { setSubmitting, resetForm }) => {
-    //const formattedBirthDate = moment(values.dataNascimento).toISOString();
+    const formattedBirthDate = moment(values.dataNascimento).toISOString();
     var updateVoterData = {
       id: values.id,
       name: values.nome,
@@ -805,7 +805,7 @@ const PageVoter = ({ ownerId, fetchDashboardData }) => {
                   .format('YYYY-MM-DD'),
                 genero: selectedVoter.gender,
                 celular: selectedVoter.cellPhone,
-                ownerId: selectedVoter.ownerId
+                ownerId: selectedVoter.owner.id
               }}
               validationSchema={validationSchema}
               onSubmit={handleUpdateVoter}

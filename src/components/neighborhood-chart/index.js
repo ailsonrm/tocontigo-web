@@ -26,7 +26,7 @@ const NeighborhoodChart = ({ data }) => {
     labels: data.labels,
     datasets: [
       {
-        label: 'Votos por Bairro',
+        label: 'Bairro',
         data: data.values,
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
@@ -36,13 +36,14 @@ const NeighborhoodChart = ({ data }) => {
   };
 
   const barOptions = {
+    //indexAxis: 'y',
     plugins: {
       legend: {
         display: false // Oculta a legenda para o gráfico de barras se desejado
       },
       title: {
         display: true,
-        text: '\u00A0\u00A0Votos por Bairro',
+        text: '\u00A0Votos por Bairro',
         align: 'start',
         padding: 10
       }

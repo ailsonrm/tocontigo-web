@@ -95,7 +95,7 @@ const ZoneChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Votos por Zona Eleitoral',
+        text: '\u00A0Votos por Zona Eleitoral',
         align: 'start',
         padding: 10
       },
