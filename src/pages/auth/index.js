@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import Login from './login';
@@ -22,10 +22,25 @@ const Element = styled.section`
 const PageAuth = () => {
   const [action, setAction] = useState('login');
   const [params] = useSearchParams();
+  const [isMobile, setIsMobile] = useState(false);
 
   const handleAction = param => {
     setAction(param);
   };
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const render = () => {
     return <Login handleAction={handleAction} />;
@@ -33,44 +48,47 @@ const PageAuth = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>
-      <div
-        style={{
-          background: '#4B6CDD',
-          width: '50%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '20px'
-        }}
-      >
-        <img src={screen} alt="" style={{ width: '380px' }} />
-        <h1 style={{ color: 'white', fontSize: '20px' }}>
-          Bem-vindos ao TôContigo!
-        </h1>
+      {!isMobile && (
         <div
           style={{
-            color: 'white',
+            background: '#4B6CDD',
+            width: '50%',
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            textAlign: 'center',
-            width: '80%'
+            gap: '20px'
           }}
         >
-          <p>
-            Nosso sistema simplifica a gestão de apoiadores com eficiência. Com
-            ferramentas avançadas, organizamos informações de contato,
-            rastreamos o engajamento e analisamos o desempenho das interações
-            para otimizar estratégias. A segmentação de apoiadores é facilitada,
-            garantindo a precisão das ações. Potencialize suas campanhas com
-            nossa solução especializada e intuitiva.
-          </p>
+          <img src={screen} alt="" style={{ width: '380px' }} />
+          <h1 style={{ color: 'white', fontSize: '20px' }}>
+            Bem-vindos ao TôContigo!
+          </h1>
+          <div
+            style={{
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
+              width: '80%'
+            }}
+          >
+            <p>
+              Nosso sistema simplifica a gestão de apoiadores com eficiência.
+              Com ferramentas avançadas, organizamos informações de contato,
+              rastreamos o engajamento e analisamos o desempenho das interações
+              para otimizar estratégias. A segmentação de apoiadores é
+              facilitada, garantindo a precisão das ações. Potencialize suas
+              campanhas com nossa solução especializada e intuitiva.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
+
       <Element
         style={{
-          width: '50%'
+          width: isMobile ? '100%' : '50%'
         }}
       >
         <a>
