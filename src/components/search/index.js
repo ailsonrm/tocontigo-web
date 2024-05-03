@@ -3,7 +3,6 @@ import { Form, InputGroup } from 'react-bootstrap';
 import styled from 'styled-components';
 import unorm from 'unorm';
 import { IoSearchOutline } from 'react-icons/io5';
-//import { ContextSearch } from '../../providers/ContextSearch';
 import {
   SearchContainer,
   SearchTypeContainer,
@@ -37,8 +36,6 @@ const SearchIconBox = styled.div`
   color: #a7a7a7;
   font-size: 20px;
 `;
-
-//const currentFilters = JSON.parse(localStorage.getItem('filters') || '{}');
 
 const Search = ({
   data,

@@ -14,16 +14,18 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
-import { FaUserCheck } from 'react-icons/fa';
-import { RiDeleteBin5Line, RiEditLine } from 'react-icons/ri';
+import { FaUserCheck, FaUserEdit } from 'react-icons/fa';
+import { RiDeleteBin5Line } from 'react-icons/ri';
 import { LuRefreshCw } from 'react-icons/lu';
+import InputMask from 'react-input-mask';
 
 import {
   Formik,
   Field,
   ErrorMessage,
   Form as FormikForm,
-  useField
+  useField,
+  useFormikContext
 } from 'formik';
 import * as Yup from 'yup';
 import { api } from '../../providers/apiClient';
@@ -59,7 +61,13 @@ const validationSchema = Yup.object().shape({
   dataNascimento: Yup.date().required('Data de nascimento obrigatória'),
   genero: Yup.string().required('Gênero obrigatório'),
   ownerId: Yup.number().required('Responsável obrigatório'),
-  cellPhone: Yup.string().required('Celular obrigatório')
+  celular: Yup.string()
+    .required('Celular obrigatório')
+    .transform(value => value.replace(/\D/g, ''))
+    .matches(
+      /^[1-9]{2}9[1-9]\d{7}$/,
+      'Celular deve ter 11 dígitos e seguir o formato (XX) 9 XXXX-XXXX'
+    )
 });
 
 const VoterInfoContainer = styled.div`
@@ -76,10 +84,10 @@ const VoterInfoContainer = styled.div`
   }
 `;
 
-const MySelect = ({ label, ...props }) => {
+const CustomSelect = ({ label, ...props }) => {
   const [field, meta] = useField(props);
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="mb-3 w-50">
       <Form.Label>{label}</Form.Label>
       <Form.Control
         as="select"
@@ -101,7 +109,6 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const { role } = currentUser;
   const [showModal, setShowModal] = useState(false);
-  //const [voters, setVoters] = useState([]);
   const [searchVoterResult, setSearchVoterResult] = useState([]);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
@@ -127,7 +134,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       motherName: values.nomeMae,
       birthDate: values.dataNascimento,
       gender: values.genero,
-      cellPhone: values.celular
+      cellPhone: cleanPhoneNumber(values.celular)
     };
 
     const response = await api
@@ -145,18 +152,6 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       });
     setSubmitting(false);
   };
-
-  // function fetchVoters() {
-  //   api
-  //     .get('/votersTC')
-  //     .then(response => {
-  //       setVoters([]);
-  //       setVoters(response.data);
-  //       setSearchVoterResult(response.data);
-  //     })
-  //     .catch(() => {})
-  //     .finally(() => {});
-  // }
 
   async function handleSearchInfos(voter) {
     showSnackbar('Funcionalidade em manutenção!!!', 'error');
@@ -203,7 +198,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       motherName: values.nomeMae,
       birthDate: values.dataNascimento,
       gender: values.genero,
-      cellPhone: values.celular
+      cellPhone: cleanPhoneNumber(values.celular)
     };
 
     api
@@ -316,6 +311,41 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
 
     return managerDesc ? `${managerDesc} / ${personDesc}` : personDesc;
   }
+
+  const CustomPhoneInputMask = ({ label, ...props }) => {
+    const [field, meta] = useField(props.field.name);
+    const { setFieldValue, setFieldTouched } = useFormikContext();
+
+    const handleChange = event => {
+      const { value } = event.target;
+      setFieldValue(props.field.name, value, true);
+    };
+
+    const handleBlur = () => {
+      setFieldTouched(props.field.name, true, true);
+    };
+
+    return (
+      <Form.Group className="mb-3  w-50">
+        <Form.Label>{label}</Form.Label>
+        <InputMask
+          {...field}
+          {...props}
+          value={props.field.value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={`form-control ${
+            meta.touched && meta.error ? 'is-invalid' : ''
+          }`}
+        />
+        {meta.touched && meta.error && (
+          <Form.Control.Feedback type="invalid">
+            {meta.error}
+          </Form.Control.Feedback>
+        )}
+      </Form.Group>
+    );
+  };
 
   return (
     <div
@@ -534,7 +564,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                               }
                             >
                               <span style={{ width: '20px' }}>
-                                <RiEditLine
+                                <FaUserEdit
                                   onClick={event => {
                                     event.preventDefault();
                                     event.stopPropagation();
@@ -739,26 +769,26 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                     display: 'flex',
                     flexDirection: 'row',
                     justifyContent: 'space-between',
-                    alignItems: 'baseline'
+                    alignItems: 'baseline',
+                    gap: '10px'
                   }}
                 >
-                  <MySelect label="Gênero" name="genero">
+                  <CustomSelect
+                    label="Gênero"
+                    name="genero"
+                    style={{ with: '50%' }}
+                  >
                     <option value="">Selecione um gênero</option>
                     <option value="M">Masculino</option>
                     <option value="F">Feminino</option>
-                  </MySelect>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Celular</Form.Label>
-                    <Field
-                      as={Form.Control}
-                      type="text"
-                      name="cellPhone"
-                      isInvalid={!!errors.cellPhone && touched.cellPhone}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.cellPhone}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+                  </CustomSelect>
+                  <Field
+                    name="celular"
+                    label="Celular"
+                    mask="(99) 9 9999-9999"
+                    maskChar=" "
+                    component={CustomPhoneInputMask}
+                  />
                 </div>
 
                 <div
@@ -856,6 +886,32 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                   <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline',
+                      gap: '10px'
+                    }}
+                  >
+                    <CustomSelect
+                      label="Gênero"
+                      name="genero"
+                      style={{ with: '50%' }}
+                    >
+                      <option value="">Selecione um gênero</option>
+                      <option value="M">Masculino</option>
+                      <option value="F">Feminino</option>
+                    </CustomSelect>
+                    <Field
+                      name="celular"
+                      label="Celular"
+                      mask="(99) 9 9999-9999"
+                      maskChar=" "
+                      component={CustomPhoneInputMask}
+                    />
+                  </div>
+                  <div
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
                     <Button
@@ -879,7 +935,6 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
           )}
         </Modal.Body>
       </Modal>
-
     </div>
   );
 };

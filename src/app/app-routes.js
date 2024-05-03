@@ -18,8 +18,6 @@ const AppRoutes = () => (
     />
 
 
-    {/* <Route path="/acessar" element={<PageAuth />} /> */}
-
     <Route
       path="/acessar"
       element={

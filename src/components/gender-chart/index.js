@@ -28,10 +28,9 @@ const GenderChart = ({ data }) => {
     labels: ['Masculino', 'Feminino'],
     datasets: [
       {
-        label: 'Distribuição de Gênero',
+        label: `Qtd. apoiadores`,
         data: data,
         backgroundColor: ['#86C7F3', '#ffa1b5'],
-        borderColor: ['#86C7F3', '#ffa1b5'],
         borderWidth: 1
       }
     ],
@@ -56,7 +55,7 @@ const GenderChart = ({ data }) => {
         padding: 10
       },
       datalabels: {
-        color: 'black',
+        color: '#353535',
         font: {
           weight: 'bold',
           size: 10
@@ -91,7 +90,7 @@ const GenderChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Quantidade por Gênero',
+        text: 'Gênero',
         position: 'top',
         align: 'start',
         font: {
@@ -111,7 +110,7 @@ const GenderChart = ({ data }) => {
       <div
         style={{
           position: 'absolute',
-          top: '45%',
+          top: '48%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           textAlign: 'center'

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Col, Row, Tabs, Tab } from 'react-bootstrap';
+import { Col, Row, Tabs, Tab, ButtonGroup, Button } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
@@ -11,7 +11,7 @@ import NeighborhoodChart from '../../components/neighborhood-chart';
 import AgeChart from '../../components/age-chart';
 import ZoneChart from '../../components/zone-chart';
 import { MdGroups } from 'react-icons/md';
-import { FaPercent, FaHandshake, FaUserCheck } from 'react-icons/fa';
+import { FaPercent, FaHandshake, FaUserCheck, FaUserTimes } from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
 import styled from 'styled-components';
 import GridManagement from '../../components/grid-management';
@@ -99,7 +99,7 @@ const PageAdmin = () => {
             <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
-                backgroundColor: '#ff9142',
+                backgroundColor: '#e3833d',
                 minWidth: '250px',
                 height: '50px',
                 borderRadius: '10px',
@@ -200,7 +200,7 @@ const PageAdmin = () => {
                 justifyContent: 'space-around'
               }}
             >
-              <FaHandshake style={{ height: '100%', width: '45px' }} />
+              <FaUserTimes style={{ height: '100%', width: '34px' }} />
               <div
                 style={{
                   display: 'flex',
@@ -213,7 +213,9 @@ const PageAdmin = () => {
                   {dashboardData?.votersInfo?.totalActiveVoters -
                     dashboardData?.votersInfo?.totalValidatedVoters || 0}
                 </span>
-                <span style={{ fontSize: '14px' }}>Apoiadore não validados</span>
+                <span style={{ fontSize: '14px' }}>
+                  Apoiadore não validados
+                </span>
               </div>
             </div>
 
@@ -243,7 +245,7 @@ const PageAdmin = () => {
                 <span style={{ fontWeight: '800', fontSize: '24px' }}>
                   {dashboardData?.votersInfo?.totalActiveVoters || 0}
                 </span>
-                <span style={{ fontSize: '14px' }}>Votos possíveis</span>
+                <span style={{ fontSize: '14px' }}>Possíveis apoiadores</span>
               </div>
             </div>
           </CustomCounter>

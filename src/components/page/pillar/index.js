@@ -11,15 +11,16 @@ import {
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ContextUser } from '../../../providers/ContextUser';
-import { FaUserShield } from 'react-icons/fa';
+import { FaUserShield, FaUserEdit } from 'react-icons/fa';
 import { LuRefreshCw } from 'react-icons/lu';
-import { RiEditLine } from 'react-icons/ri';
+import InputMask from 'react-input-mask';
 import {
   Formik,
   Field,
   ErrorMessage,
   Form as FormikForm,
-  useField
+  useField,
+  useFormikContext
 } from 'formik';
 import * as Yup from 'yup';
 import { api } from '../../../providers/apiClient';
@@ -54,10 +55,10 @@ const CustomActionsEditModal = styled.div`
   }
 `;
 
-const MySelect = ({ label, ...props }) => {
+const MySelect = ({ label, width, ...props }) => {
   const [field, meta] = useField(props);
   return (
-    <Form.Group className="mb-3">
+    <Form.Group className="mb-3" style={{ width: width }}>
       <Form.Label>{label}</Form.Label>
       <Form.Control
         as="select"
@@ -71,10 +72,21 @@ const MySelect = ({ label, ...props }) => {
   );
 };
 
+const cleanPhoneNumber = phoneNumber => {
+  return phoneNumber.replace(/\D/g, '');
+};
+
 const validationSchema = Yup.object().shape({
   nome: Yup.string().required('Nome é obrigatório'),
   email: Yup.string().required('Email é obrigatório'),
-  meta: Yup.string().required('Meta é obrigatório')
+  meta: Yup.string().required('Meta é obrigatório'),
+  celular: Yup.string()
+    .required('Celular obrigatório')
+    .transform(value => value.replace(/\D/g, ''))
+    .matches(
+      /^[1-9]{2}9[1-9]\d{7}$/,
+      'Celular deve ter 11 dígitos e seguir o formato (XX) 9 XXXX-XXXX'
+    )
 });
 
 const Pillar = ({ managedBy, fetchDashboardData }) => {
@@ -103,6 +115,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     const formattedValues = {
       name: values.nome,
       email: values.email,
+      cellPhone: cleanPhoneNumber(values.celular),
       meta: Number(values.meta) || 100,
       roleId: 2,
       managedBy
@@ -172,7 +185,9 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       name: values.nome,
       email: values.email,
       meta: Number(values.meta) || 100,
-      status: values.status
+      status: values.status,
+      cellPhone: cleanPhoneNumber(values.celular),
+      roleId: Number(values.roleId)
     };
 
     api
@@ -206,6 +221,41 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       });
 
     setSubmitting(false);
+  };
+
+  const CustomPhoneInputMask = ({ label, ...props }) => {
+    const [field, meta] = useField(props.field.name);
+    const { setFieldValue, setFieldTouched } = useFormikContext();
+
+    const handleChange = event => {
+      const { value } = event.target;
+      setFieldValue(props.field.name, value, true);
+    };
+
+    const handleBlur = () => {
+      setFieldTouched(props.field.name, true, true);
+    };
+
+    return (
+      <Form.Group className="mb-3" style={{ width: '60%' }}>
+        <Form.Label>{label}</Form.Label>
+        <InputMask
+          {...field}
+          {...props}
+          value={props.field.value}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={`form-control ${
+            meta.touched && meta.error ? 'is-invalid' : ''
+          }`}
+        />
+        {meta.touched && meta.error && (
+          <Form.Control.Feedback type="invalid">
+            {meta.error}
+          </Form.Control.Feedback>
+        )}
+      </Form.Group>
+    );
   };
 
   return (
@@ -310,7 +360,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         }
                       >
                         <span style={{ width: '20px' }}>
-                          <RiEditLine
+                          <FaUserEdit
                             onClick={event => {
                               event.preventDefault();
                               event.stopPropagation();
@@ -342,7 +392,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       style={{
                         display: 'flex',
                         flexDirection: 'row',
-                        justifyContent: 'space-between',
+                        justifyContent: 'space-between'
                       }}
                     >
                       <div>
@@ -390,6 +440,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             initialValues={{
               nome: '',
               email: '',
+              celular: '',
               meta: 100,
               roleId: 2,
               managedBy,
@@ -400,22 +451,28 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
           >
             {({ isSubmitting, errors, touched }) => (
               <FormikForm>
+                <Form.Group className="mb-3">
+                  <Form.Label>Nome</Form.Label>
+                  <Field
+                    as={Form.Control}
+                    type="text"
+                    name="nome"
+                    isInvalid={!!errors.nome && touched.nome}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.nome}
+                  </Form.Control.Feedback>
+                </Form.Group>
+
                 <div
-                  style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    gap: '10px'
+                  }}
                 >
-                  <Form.Group className="mb-3" style={{ width: '85%' }}>
-                    <Form.Label>Nome</Form.Label>
-                    <Field
-                      as={Form.Control}
-                      type="text"
-                      name="nome"
-                      isInvalid={!!errors.nome && touched.nome}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.nome}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group className="mb-3" style={{ width: '15%' }}>
+                  <Form.Group className="mb-3" style={{ width: '40%' }}>
                     <Form.Label>Meta</Form.Label>
                     <Field
                       as={Form.Control}
@@ -427,6 +484,13 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       {errors.meta}
                     </Form.Control.Feedback>
                   </Form.Group>
+                  <Field
+                    name="celular"
+                    label="Celular"
+                    mask="(99) 9 9999-9999"
+                    maskChar=" "
+                    component={CustomPhoneInputMask}
+                  />
                 </div>
                 <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
@@ -481,8 +545,10 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                 id: selectedPillar.id,
                 nome: selectedPillar.name,
                 email: selectedPillar.email,
+                celular: selectedPillar.cellPhone,
                 meta: selectedPillar.meta,
-                status: selectedPillar.status
+                status: selectedPillar.status,
+                roleId: selectedPillar.roleId
               }}
               validationSchema={validationSchema}
               onSubmit={handleUpdatePillar}
@@ -517,22 +583,50 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       {errors.email}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Meta</Form.Label>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      flexDirection: 'row',
+                      gap: '10px'
+                    }}
+                  >
+                    <Form.Group className="mb-3" style={{ width: '40%' }}>
+                      <Form.Label>Meta</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="meta"
+                        isInvalid={!!errors.meta && touched.meta}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.meta}
+                      </Form.Control.Feedback>
+                    </Form.Group>
                     <Field
-                      as={Form.Control}
-                      type="text"
-                      name="meta"
-                      isInvalid={!!errors.meta && touched.meta}
+                      name="celular"
+                      label="Celular"
+                      mask="(99) 9 9999-9999"
+                      maskChar=" "
+                      component={CustomPhoneInputMask}
                     />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.meta}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <MySelect label="Status" name="status">
-                    <option value="ACTIVE">Ativo</option>
-                    <option value="INACTIVE">Inativo</option>
-                  </MySelect>
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      gap: '10px'
+                    }}
+                  >
+                    <MySelect label="Status" name="status" width="50%">
+                      <option value="ACTIVE">Ativo</option>
+                      <option value="INACTIVE">Inativo</option>
+                    </MySelect>
+                    <MySelect label="Papel" name="roleId" width="50%">
+                      <option value="2">Pilar</option>
+                      <option value="3">Lider</option>
+                    </MySelect>
+                  </div>
                   <div
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                   >

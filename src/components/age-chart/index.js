@@ -67,60 +67,6 @@ const getAgeDistribution = data => {
 const AgeChart = ({ data }) => {
   const ageData = getAgeDistribution(data);
 
-  // const chartData = {
-  //   labels: ageData.labels,
-  //   datasets: [
-  //     {
-  //       label: 'Qtd. Eleitores por Faixa Etári',
-  //       data: ageData.values,
-  //       backgroundColor: 'rgba(75, 192, 192, 0.5)'
-  //     }
-  //   ]
-  // };
-
-  // const ageOptions = {
-  //   plugins: {
-  //     legend: {
-  //       display: false
-  //     },
-  //     title: {
-  //       display: true,
-  //       text: '\u00A0Eleitores por Faixa Etária',
-  //       align: 'start',
-  //       padding: 10
-  //     },
-  //     // tooltip: {
-  //     //   callbacks: {
-  //     //     title: function (context) {
-  //     //       const zoneLabel = context[0].label;
-  //     //       return `Zona Eleitoral: ${zoneLabel}`;
-  //     //     },
-  //     //     label: function (context) {
-  //     //       const zoneLabel = context.label;
-  //     //       const value = context.parsed.y;
-  //     //       const info = additionalInfoForZone[zoneLabel] || {};
-  //     //       const quantityLine = ` Apoiadores: ${value}`;
-  //     //       const infoLines = [
-  //     //         '',
-  //     //         `Juiz: ${info.juiz || 'N/D'}`,
-  //     //         `Chefe: ${info.chefe || 'N/D'}`,
-  //     //         `Email: ${info.email || 'N/D'}`,
-  //     //         `Telefone: ${info.telefone || 'N/D'}`,
-  //     //         `Endereço: ${info.endereco || 'N/D'}`
-  //     //       ];
-  //     //       return [quantityLine, ...infoLines];
-  //     //     }
-  //     //   }
-  //     // },
-  //     datalabels: {}
-  //   },
-  //   scales: {
-  //     y: {
-  //       beginAtZero: true
-  //     }
-  //   }
-  // };
-
   const ageOptions = {
     plugins: {
       legend: {
@@ -128,7 +74,7 @@ const AgeChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: 'Eleitores por Faixa Etária e Gênero',
+        text: 'Faixa Etária e Gênero',
         align: 'start',
         padding: 10
       },

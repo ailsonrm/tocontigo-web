@@ -81,8 +81,7 @@ const ZoneChart = ({ data }) => {
       {
         label: 'Zona Eleitoral',
         data: data.values,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: '#6795F3',
         borderWidth: 1
       }
     ]
@@ -95,7 +94,7 @@ const ZoneChart = ({ data }) => {
       },
       title: {
         display: true,
-        text: '\u00A0Votos por Zona Eleitoral',
+        text: '\u00A0Zona Eleitoral',
         align: 'start',
         padding: 10
       },
@@ -123,6 +122,7 @@ const ZoneChart = ({ data }) => {
         }
       },
       datalabels: {
+        color: 'white',
       }
     },
     scales: {
