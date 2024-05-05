@@ -1,24 +1,26 @@
 import styled from 'styled-components';
 import { Form } from 'react-bootstrap';
 
-export const SearchContainer = styled.div`
+export const CustomChartsContainer = styled.div`
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
+  flex-direction: row;
   gap: 10px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
 `;
 
-export const SearchStateContainer = styled.div`
-  width: 35%;
-`;
+export const CustomCounter = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
 
-export const SearchTypeContainer = styled.div`
-  width: 25%;
-`;
-
-export const CustomSelect = styled(Form.Select)`
-  padding-left: 15px;
-  border-radius: 50px !important;
-  color: #a7a7a7;
-  font-style: italic;
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
 `;

@@ -13,6 +13,33 @@ const GridManagement = ({ voterList }) => {
   const [loading, setLoading] = useState(true);
   const gridApiRef = useRef(null);
 
+  function formatRegistryId(registryId) {
+    if (typeof registryId === 'string' && registryId.length >= 12) {
+      return (
+        registryId.slice(0, 4) +
+        '.' +
+        registryId.slice(4, 8) +
+        '.' +
+        registryId.slice(8, 12)
+      );
+    } else {
+      return registryId;
+    }
+  }
+
+  function formatPhoneNumber(phoneNumber) {
+    if (!phoneNumber) return 'Não informado';
+  
+    const cleaned = ('' + phoneNumber).replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{2})(\d{1})(\d{4})(\d{4})$/);
+  
+    if (match) {
+      return '(' + match[1] + ') ' + match[2] + ' ' + match[3] + '-' + match[4];
+    }
+  
+    return 'Telefone inválido';
+  }
+
   useEffect(() => {
     async function fetchColumnDefs() {
       return [
@@ -103,12 +130,16 @@ const GridManagement = ({ voterList }) => {
           field: 'cellPhone',
           filter: true,
           floatingFilter: true,
-          valueFormatter: params =>
-            params.value ? params.value : 'Não informado',
+          valueFormatter: params => formatPhoneNumber(params.value),
           cellStyle: params =>
             params.value ? {} : { color: '#fff', backgroundColor: '#ef7878' }
         },
-        { headerName: 'Nº Título', field: 'registryId' },
+        {
+          headerName: 'Nº Título',
+          field: 'registryId',
+          valueFormatter: params => formatRegistryId(params.value)
+        },
+
         {
           headerName: 'Local de Votação',
           field: 'place',
@@ -184,16 +215,21 @@ const GridManagement = ({ voterList }) => {
 
   const updateColumnWidths = () => {
     if (!gridRef.current) return;
-    
+
     gridRef.current.getColumnDefs().forEach(colDef => {
-        if (colDef.field === 'value') {
-            const maxWidth = data.reduce((max, row) => Math.max(max, row[colDef.field].length * 10), 100);
-            gridRef.current.getColumnState().find(col => col.colId === colDef.field).width = maxWidth;
-        }
+      if (colDef.field === 'value') {
+        const maxWidth = data.reduce(
+          (max, row) => Math.max(max, row[colDef.field].length * 10),
+          100
+        );
+        gridRef.current
+          .getColumnState()
+          .find(col => col.colId === colDef.field).width = maxWidth;
+      }
     });
-    
+
     gridRef.current.onColumnEverythingChanged();
-};
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

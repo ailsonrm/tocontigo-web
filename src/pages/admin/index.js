@@ -1,5 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Col, Row, Tabs, Tab, ButtonGroup, Button } from 'react-bootstrap';
+import {
+  Col,
+  Row,
+  Tabs,
+  Tab,
+  ButtonGroup,
+  Button,
+  Form
+} from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Page from '../../components/page';
 import { ContextUser } from '../../providers/ContextUser';
@@ -11,34 +19,16 @@ import NeighborhoodChart from '../../components/neighborhood-chart';
 import AgeChart from '../../components/age-chart';
 import ZoneChart from '../../components/zone-chart';
 import { MdGroups } from 'react-icons/md';
-import { FaPercent, FaHandshake, FaUserCheck, FaUserTimes } from 'react-icons/fa';
+import {
+  FaPercent,
+  FaHandshake,
+  FaUserCheck,
+  FaUserTimes
+} from 'react-icons/fa';
 import { api } from '../../providers/apiClient';
 import styled from 'styled-components';
 import GridManagement from '../../components/grid-management';
-
-const CustomCounter = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  gap: 10px;
-
-  @media (max-width: 470px) {
-    flex-direction: column;
-  }
-`;
-
-const CustomChartsContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-
-  @media (max-width: 470px) {
-    flex-direction: column;
-  }
-`;
+import { CustomCounter, CustomChartsContainer } from './styles';
 
 const PageAdmin = () => {
   const { currentUser } = useContext(ContextUser);
@@ -48,6 +38,10 @@ const PageAdmin = () => {
   const [groupMeta, setGroupMeta] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
   const [voters, setVoters] = useState([]);
+
+  const handleShowCharts = () => {
+    setShowCharts(!showCharts);
+  };
 
   function fetchVoters() {
     api
@@ -92,7 +86,7 @@ const PageAdmin = () => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px'
+            gap: '10px'
           }}
         >
           <CustomCounter>
@@ -251,9 +245,9 @@ const PageAdmin = () => {
           </CustomCounter>
 
           <CustomChartsContainer>
-            <GenderChart data={genderData} />
-            <AgeChart data={voters} />
-            <ZoneChart data={zoneData} />
+            <GenderChart data={genderData}/>
+            <AgeChart data={voters}/>
+            <ZoneChart data={zoneData}/>
           </CustomChartsContainer>
         </div>
 

@@ -154,35 +154,35 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   };
 
   async function handleSearchInfos(voter) {
-    showSnackbar('Funcionalidade em manutenção!!!', 'error');
-    // setLoadingInfos(prevLoadingInfos => ({
-    //   ...prevLoadingInfos,
-    //   [voter.id]: true
-    // }));
+    //showSnackbar('Funcionalidade em manutenção!!!', 'error');
+    setLoadingInfos(prevLoadingInfos => ({
+      ...prevLoadingInfos,
+      [voter.id]: true
+    }));
 
-    // var formattedValues = {
-    //   id: voter.id,
-    //   nome: voter.name,
-    //   dataNascimento: moment(voter.birthDate).utc().format('YYYY-MM-DD'),
-    //   nomeMae: voter.motherName,
-    //   nroTitulo: voter.registryId
-    // };
+    var formattedValues = {
+      id: voter.id,
+      nome: voter.name,
+      dataNascimento: moment(voter.birthDate).utc().format('DDMMYYYY'),
+      nomeMae: voter.motherName,
+      nroTitulo: voter.registryId
+    };
 
-    // api
-    //   .patch('/votersTC/searchInfos', formattedValues)
-    //   .then(r => {
-    //     handleSupplementInfos(voter, { situacao: 'Na fila para validação' });
-    //   })
-    //   .catch(error => {
-    //     console.error('Erro na API', error.response.data.error);
-    //     showSnackbar(error.response.data.error, 'error');
-    //   })
-    //   .finally(() =>
-    //     setLoadingInfos(prevLoadingInfos => ({
-    //       ...prevLoadingInfos,
-    //       [voter.id]: false
-    //     }))
-    //   );
+    api
+      .patch('/votersTC/searchInfos', formattedValues)
+      .then(r => {
+        handleSupplementInfos(voter, { situacao: 'Na fila para validação' });
+      })
+      .catch(error => {
+        console.error('Erro na API', error.response.data.error);
+        showSnackbar(error.response.data.error, 'error');
+      })
+      .finally(() =>
+        setLoadingInfos(prevLoadingInfos => ({
+          ...prevLoadingInfos,
+          [voter.id]: false
+        }))
+      );
   }
 
   async function handleEditVoter(voter) {
@@ -272,10 +272,13 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
       case null:
         return '#808080';
       default:
-        if (situation.startsWith('Dados não conferem')) {
+        if (
+          situation.includes('Não Encontrada') ||
+          situation.includes('Inválid')
+        ) {
           return '#f94848';
         }
-        if (situation === 'Na fila para validação') {
+        if (situation.includes('Na fila')) {
           return '#ff993e';
         }
         return '#007bff';
@@ -285,11 +288,12 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   const getValidVoter = placeDistrict => {
     return (
       placeDistrict === null ||
+      placeDistrict === "**********" ||
       placeDistrict.toLowerCase().includes('guarulhos')
     );
   };
 
-  function getResponsibleDesc(voter) {
+  function getResponsibleDesc(owner) {
     const roleDescriptions = {
       ADMIN: '',
       PILLAR: 'Pilar',
@@ -297,19 +301,26 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
     };
 
     const personDesc = `${
-      roleDescriptions[voter.role.name]
-        ? roleDescriptions[voter.role.name] + ': '
-        : ''
-    }${voter.name.trim()}`;
+      roleDescriptions[owner.role] ? roleDescriptions[owner.role] + ': ' : ''
+    }${owner.name.trim()}`;
 
     let managerDesc = '';
-    if (voter.manager && roleDescriptions[voter.manager.role.name]) {
+
+    if (Object.keys(owner.manager).length !== 0) {
       managerDesc = `${
-        roleDescriptions[voter.manager.role.name]
-      }: ${voter.manager.name.trim()}`;
+        roleDescriptions[owner.manager?.role]
+          ? `${
+              roleDescriptions[owner.manager?.role]
+            }: ${owner.manager?.name?.trim()}`
+          : owner.manager?.name?.trim()
+      }`;
     }
 
-    return managerDesc ? `${managerDesc} / ${personDesc}` : personDesc;
+    if (managerDesc !== undefined && managerDesc !== '') {
+      return `${managerDesc} / ${personDesc}`.trim();
+    } else {
+      return personDesc;
+    }
   }
 
   const CustomPhoneInputMask = ({ label, ...props }) => {
@@ -522,34 +533,36 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                                 style={{ width: '20px', height: '20px' }}
                               />
                             ) : (
-                              <OverlayTrigger
-                                placement="bottom-start"
-                                delay={{ show: 250, hide: 400 }}
-                                overlay={
-                                  <Tooltip
-                                    id={`tooltip-${voter.id}`}
-                                    className="custom-tooltip-inner"
-                                  >
-                                    Buscar dados complementares
-                                  </Tooltip>
-                                }
-                              >
-                                <span style={{ width: '20px' }}>
-                                  <SiReacthookform
-                                    onClick={event => {
-                                      event.preventDefault();
-                                      event.stopPropagation();
-                                      handleSearchInfos(voter);
-                                    }}
-                                    style={{
-                                      fontSize: '18px',
-                                      color: 'green',
-                                      strokeWidth: '1px',
-                                      cursor: 'pointer'
-                                    }}
-                                  />
-                                </span>
-                              </OverlayTrigger>
+                              role.name === 'ADMIN' && (
+                                <OverlayTrigger
+                                  placement="bottom-start"
+                                  delay={{ show: 250, hide: 400 }}
+                                  overlay={
+                                    <Tooltip
+                                      id={`tooltip-${voter.id}`}
+                                      className="custom-tooltip-inner"
+                                    >
+                                      Buscar dados complementares
+                                    </Tooltip>
+                                  }
+                                >
+                                  <span style={{ width: '20px' }}>
+                                    <SiReacthookform
+                                      onClick={event => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        handleSearchInfos(voter);
+                                      }}
+                                      style={{
+                                        fontSize: '18px',
+                                        color: 'green',
+                                        strokeWidth: '1px',
+                                        cursor: 'pointer'
+                                      }}
+                                    />
+                                  </span>
+                                </OverlayTrigger>
+                              )
                             )}
                             <OverlayTrigger
                               placement="bottom-start"

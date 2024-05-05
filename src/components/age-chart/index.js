@@ -64,7 +64,7 @@ const getAgeDistribution = data => {
   };
 };
 
-const AgeChart = ({ data }) => {
+const AgeChart = ({ data, showCharts }) => {
   const ageData = getAgeDistribution(data);
 
   const ageOptions = {

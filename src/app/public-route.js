@@ -10,7 +10,7 @@ const PublicRoute = ({ children }) => {
   const token = localStorage.getItem('JWT');  
 
   if (token) {
-    const urlGoTo = getRedirectUrl(currentUser.role.name);
+    const urlGoTo = getRedirectUrl(currentUser?.role);
     return <Navigate to={urlGoTo} replace />;
   }
   return children;

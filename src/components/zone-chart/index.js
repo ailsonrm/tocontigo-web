@@ -31,42 +31,42 @@ const ZoneChart = ({ data }) => {
       telefone: '(11) 94997-1861',
       endereco: 'Rua dos Crisântemos, 29 1º Andar, Sala 102'
     },
-    "185ª": {
+    '185ª': {
       juiz: 'Valmir Maurici Júnior',
       chefe: 'Antonio Willyams da Silva Assis',
       email: 'ze185@tre-sp.jus.br',
       telefone: '(11) 2412-1598',
       endereco: 'Avenida João Veloso da Silva, 1181'
     },
-    "278ª": {
+    '278ª': {
       juiz: 'Gilberto Azevedo de Moraes Costa',
       chefe: 'Rodrigo da Silva Barros',
       email: 'ze278@tre-sp.jus.br',
       telefone: '(11) 94997-1659',
       endereco: 'Rua dos Crisântemos, 29 1º Andar, Sala 102'
     },
-    "279ª": {
+    '279ª': {
       juiz: 'Priscila Devechi Ferraz Maia',
       chefe: 'Jose Maurício Bortoluzzi Correa',
       email: 'ze279@tre-sp.jus.br',
       telefone: '(11) 2461-0556',
       endereco: 'Rua dos Crisântemos, 29 1º Andar, Sala 102'
     },
-    "393ª": {
+    '393ª': {
       juiz: 'Mirian Keiko Sanches Macedo',
       chefe: 'Rogerio Alves da Silva',
       email: 'ze393@tre-sp.jus.br',
       telefone: '(11) 94997-0345',
       endereco: 'Rua dos Crisântemos, 29 1º Andar, Sala 102'
     },
-    "394ª": {
+    '394ª': {
       juiz: 'Patricia Padilha',
       chefe: 'Antônio Reberte de Brito',
       email: 'ze394@tre-sp.jus.br',
       telefone: '(11) 94997-0712',
       endereco: 'Avenida João Veloso da Silva, 1181'
     },
-    "395ª": {
+    '395ª': {
       juiz: 'Adriana Porto Mendes',
       chefe: 'Jorge Soares',
       email: 'ze395@tre-sp.jus.br',
@@ -122,7 +122,7 @@ const ZoneChart = ({ data }) => {
         }
       },
       datalabels: {
-        color: 'white',
+        color: 'white'
       }
     },
     scales: {
@@ -134,7 +134,10 @@ const ZoneChart = ({ data }) => {
 
   return (
     <CustomChartsContainer>
-      <Bar data={barData} options={barOptions} />
+      <Bar
+        data={barData}
+        options={barOptions}
+      />
     </CustomChartsContainer>
   );
 };

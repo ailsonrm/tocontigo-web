@@ -10,10 +10,10 @@ const CustomChartsContainer = styled.div`
   border: 1px solid #dee2e6;
   border-radius: 10px;
   display: flex;
+  height: 220px;
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 220px;
   flex: 1;
 
   @media (max-width: 470px) {
@@ -85,7 +85,7 @@ const GenderChart = ({ data }) => {
         labels: {
           boxWidth: 20,
           padding: 20,
-          usePointStyle: true,
+          usePointStyle: true
         }
       },
       title: {
@@ -116,7 +116,12 @@ const GenderChart = ({ data }) => {
           textAlign: 'center'
         }}
       >
-        <FaRestroom style={{ fontSize: '70px', opacity: 0.5 }} />
+        <FaRestroom
+          style={{
+            fontSize: '70px',
+            opacity: 0.5
+          }}
+        />
       </div>
     </CustomChartsContainer>
   );
