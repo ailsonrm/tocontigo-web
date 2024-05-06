@@ -29,14 +29,14 @@ const GridManagement = ({ voterList }) => {
 
   function formatPhoneNumber(phoneNumber) {
     if (!phoneNumber) return 'Não informado';
-  
+
     const cleaned = ('' + phoneNumber).replace(/\D/g, '');
     const match = cleaned.match(/^(\d{2})(\d{1})(\d{4})(\d{4})$/);
-  
+
     if (match) {
       return '(' + match[1] + ') ' + match[2] + ' ' + match[3] + '-' + match[4];
     }
-  
+
     return 'Telefone inválido';
   }
 
@@ -136,8 +136,7 @@ const GridManagement = ({ voterList }) => {
         },
         {
           headerName: 'Nº Título',
-          field: 'registryId',
-          valueFormatter: params => formatRegistryId(params.value)
+          field: 'registryId'
         },
 
         {
@@ -244,13 +243,17 @@ const GridManagement = ({ voterList }) => {
       ) : (
         <div className="ag-theme-balham-dark" style={{ height: '100%' }}>
           <AgGridReact
-            onGridReady={event => {
-              gridApiRef.current = event.api;
-            }}
+            onGridReady={onGridReady}
             rowData={rowData}
             columnDefs={columnDefs}
             domLayout="autoHeight"
+            rowSelection="multiple"
+            enableCellTextSelection={true}
+            clipboardOptions={{
+              copyHeadersToClipboard: true
+            }}
             rowClassRules={rowClassRules}
+            ena
           />
         </div>
       )}
