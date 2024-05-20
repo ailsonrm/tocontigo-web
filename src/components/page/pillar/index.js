@@ -163,6 +163,18 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     return totalVoters + ownedVoters;
   }
 
+  function sumAllOwnedVotersPercent(manages, ownedVoters) {
+    let totalVoters = 0;
+
+    manages.forEach(manage => {
+      totalVoters += manage.ownedVoters.filter(
+        voter => voter.situation === 'REGULAR'
+      ).length;
+    });
+
+    return totalVoters + ownedVoters;
+  }
+
   function calcPercentageMeta(totalVoters, meta) {
     if (
       typeof totalVoters !== 'number' ||
@@ -391,27 +403,60 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       as="div"
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between'
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '5px'
                       }}
                     >
-                      <div>
-                        Apoiadores:{' '}
-                        {sumAllOwnedVoters(
-                          pillar.manages,
-                          pillar.ownedVoters.length
-                        )}
-                      </div>
-                      <div>Meta: {pillar.meta || 0}</div>
-                      <div>
-                        {calcPercentageMeta(
-                          sumAllOwnedVoters(
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div>
+                          Apoiadores:{' '}
+                          {sumAllOwnedVoters(
                             pillar.manages,
                             pillar.ownedVoters.length
-                          ),
-                          pillar.meta
-                        )}
-                        %
+                          )}
+                        </div>
+                        <div>Meta: {pillar.meta || 0}</div>
+                      </div>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div style={{ color: '#70bf3b', fontWeight: 600 }}>
+                          Regular:{' '}
+                          {calcPercentageMeta(
+                            sumAllOwnedVotersPercent(
+                              pillar.manages,
+                              pillar.ownedVoters.filter(
+                                voter => voter.situation === 'REGULAR'
+                              ).length
+                            ),
+                            pillar.meta
+                          )}
+                          %
+                        </div>
+                        <div style={{ color: '#ef7878', fontWeight: 600 }}>
+                          Erro:{' '}
+                          {calcPercentageMeta(
+                            sumAllOwnedVotersPercent(
+                              pillar.manages,
+                              pillar.ownedVoters.filter(
+                                voter => voter.situation !== 'REGULAR'
+                              ).length
+                            ),
+                            pillar.meta
+                          )}
+                          %
+                        </div>
                       </div>
                     </Card.Text>
                   </Card.Body>
