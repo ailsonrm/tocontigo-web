@@ -1,9 +1,26 @@
+.ag-theme-balham, .ag-theme-balham-dark {
+    /* --ag-foreground-color: #403c3f; */
+    /* --ag-background-color: #f0f0f1; */
+    /* --ag-header-foreground-color: #d3d3d3; */
+    --ag-header-background-color: #5a575b;
+    --ag-odd-row-background-color: rgba(64, 60, 63, 0.1);
+    /* --ag-header-column-resize-handle-color: #403c3f; */
+
+    /* --ag-font-size: 17px; */
+    --ag-font-family: monospace;
+}
+
+
 .rag-red {
     color: #ef7878;
     font-weight: bold;
 }
 .rag-green {
     color: #70bf3b;
+    font-weight: bold;
+}
+.rag-orange {
+    color: #e3833d;
     font-weight: bold;
 }
 .rag-gray {

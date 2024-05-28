@@ -1,177 +1,220 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import styled from 'styled-components';
 import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-community/styles/ag-theme-balham.css';
 import './styles.css';
-import { ButtonGroup, Button } from 'react-bootstrap';
+import { ButtonGroup, Button, Modal, Pagination } from 'react-bootstrap';
+import GridPagination from '../grid-management/grid-pagination';
+import { getGender } from 'gender-detection-from-name';
+import { desnormalizeString } from '../../utils/format-utils';
+import { LuRefreshCw } from 'react-icons/lu';
 
-const GridManagement = ({ voterList }) => {
+const CustomBtnGroup = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 470px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+const GridManagement = ({
+  lawyerList,
+  page,
+  limit,
+  totalLawyers,
+  onPageChange,
+  onLimitChange,
+  setSearchQuery,
+  handleNewVoter,
+  fetchDashboardData,
+  fetchLawyers
+}) => {
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([]);
   const [loading, setLoading] = useState(true);
   const gridApiRef = useRef(null);
-
-  function formatRegistryId(registryId) {
-    if (typeof registryId === 'string' && registryId.length >= 12) {
-      return (
-        registryId.slice(0, 4) +
-        '.' +
-        registryId.slice(4, 8) +
-        '.' +
-        registryId.slice(8, 12)
-      );
-    } else {
-      return registryId;
-    }
-  }
+  const [showConfirmModal, setConfirmShowModal] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(true);
 
   function formatPhoneNumber(phoneNumber) {
     if (!phoneNumber) return 'Não informado';
 
     const cleaned = ('' + phoneNumber).replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{2})(\d{1})(\d{4})(\d{4})$/);
 
-    if (match) {
-      return '(' + match[1] + ') ' + match[2] + ' ' + match[3] + '-' + match[4];
+    const matchCelular = cleaned.match(/^(\d{2})(\d{1})(\d{4})(\d{4})$/);
+
+    if (matchCelular) {
+      return (
+        '(' +
+        matchCelular[1] +
+        ') ' +
+        matchCelular[2] +
+        ' ' +
+        matchCelular[3] +
+        '-' +
+        matchCelular[4]
+      );
     }
 
-    return 'Telefone inválido';
+    const matchTelefone = cleaned.match(/^(\d{2})(\d{4})(\d{4})$/);
+
+    if (matchTelefone) {
+      return (
+        '(' +
+        matchTelefone[1] +
+        ') ' +
+        matchTelefone[2] +
+        '-' +
+        matchTelefone[3]
+      );
+    }
+
+    if (cleaned.length === 10) {
+      return (
+        '(' +
+        cleaned.slice(0, 2) +
+        ') ' +
+        cleaned.slice(2, 6) +
+        '-' +
+        cleaned.slice(6)
+      );
+    } else if (cleaned.length === 11) {
+      return (
+        '(' +
+        cleaned.slice(0, 2) +
+        ') ' +
+        cleaned.slice(2, 3) +
+        ' ' +
+        cleaned.slice(3, 7) +
+        '-' +
+        cleaned.slice(7)
+      );
+    }
+
+    return 'N/I';
   }
 
   useEffect(() => {
     async function fetchColumnDefs() {
       return [
-        { headerName: '#ID', field: 'id', width: 70 },
+        {
+          headerName: '#ID',
+          field: 'id',
+          width: 80,
+          headerCheckboxSelection: true,
+          checkboxSelection: true
+        },
+
         {
           headerName: 'Nome',
-          field: 'name',
-          filter: true,
-          floatingFilter: true
+          field: 'nome',
+          filter: true
         },
         {
-          headerName: 'Nome da Mãe',
-          field: 'motherName',
-          filter: true,
-          floatingFilter: true
+          headerName: 'OAB Nº',
+          field: 'inscricao',
+          width: 100,
+          filter: true
         },
         {
-          headerName: 'Data de Nascimento',
-          field: 'birthDate',
-          filter: 'agDateColumnFilter',
-          floatingFilter: true,
-          filterParams: {
-            comparator: function (filterLocalDateAtMidnight, cellValue) {
-              const filterDateUTC = new Date(
-                Date.UTC(
-                  filterLocalDateAtMidnight.getFullYear(),
-                  filterLocalDateAtMidnight.getMonth(),
-                  filterLocalDateAtMidnight.getDate()
-                )
-              );
-
-              const cellDate = new Date(cellValue);
-              const cellDateUTC = new Date(
-                Date.UTC(
-                  cellDate.getUTCFullYear(),
-                  cellDate.getUTCMonth(),
-                  cellDate.getUTCDate()
-                )
-              );
-
-              if (cellDateUTC < filterDateUTC) {
-                return -1;
-              } else if (cellDateUTC > filterDateUTC) {
-                return 1;
-              } else {
-                return 0;
+          headerName: 'Status',
+          field: 'voters',
+          width: 120,
+          filter: true,
+          valueGetter: params => {
+            if (params.data.voters && params.data.voters.length > 0) {
+              switch (params.data.voters[0].status) {
+                case 'REJECTED':
+                  return 'Não confirmado';
+                case 'ACCEPTED':
+                  return 'Confirmado';
+                case 'IN_PROGRESS':
+                  return 'Em andamento';
+                default:
+                  return 'Não está em andamento';
               }
-            },
-            browserDatePicker: true
-          },
-          valueFormatter: params => {
-            if (!params.value) return '';
-            const date = new Date(params.value);
-            return (
-              date.getUTCDate().toString().padStart(2, '0') +
-              '/' +
-              (date.getUTCMonth() + 1).toString().padStart(2, '0') +
-              '/' +
-              date.getUTCFullYear().toString()
-            );
+            } else {
+              return '-';
+            }
           }
         },
-
         {
-          headerName: 'Quem cadastrou responde para',
-          field: 'owner.manager.name',
-          filter: true,
-          floatingFilter: true
+          headerName: 'Tipo',
+          field: 'tipo',
+          width: 120,
+          filter: true
         },
         {
-          headerName: 'Quem cadastrou',
-          field: 'owner.name',
+          headerName: 'Contato',
+          field: 'contato',
           filter: true,
-          floatingFilter: true
+          width: 150,
+
+          valueFormatter: params => {
+            const celular = params.data.celular
+              ? formatPhoneNumber(params.data.celular)
+              : null;
+            const telefone = params.data.telefone
+              ? formatPhoneNumber(params.data.telefone)
+              : null;
+            return celular || telefone || 'N/I';
+          }
+        },
+        {
+          headerName: 'Endereço',
+          field: 'endereco',
+          filter: true,
+          width: 230,
+
+          valueGetter: params => {
+            const rua = params.data.endereco;
+            const numero = params.data.numero || 'S/N';
+            return `${rua}, nº ${numero}`;
+          }
+        },
+        {
+          headerName: 'Complemento',
+          field: 'complemento',
+          filter: true,
+          width: 120
+        },
+        {
+          headerName: 'Bairro',
+          field: 'bairro',
+          filter: true,
+          width: 150
+        },
+        {
+          headerName: 'CEP',
+          field: 'cep',
+          filter: true,
+          width: 100
+        },
+        {
+          headerName: 'Cidade',
+          field: 'cidade',
+          filter: true,
+          width: 120
+        },
+        {
+          headerName: 'UF',
+          field: 'estado',
+          filter: true,
+          width: 80
         },
         {
           headerName: 'Gênero',
-          field: 'gender',
-          filter: true,
-          floatingFilter: true,
-          valueFormatter: params =>
-            params.value === 'M' ? 'Masculino' : 'Feminino',
-          filterValueGetter: params =>
-            params.data.gender === 'M' ? 'Masculino' : 'Feminino'
-        },
-        {
-          headerName: 'Telefone',
-          field: 'cellPhone',
-          filter: true,
-          floatingFilter: true,
-          valueFormatter: params => formatPhoneNumber(params.value),
-          cellStyle: params =>
-            params.value ? {} : { color: '#fff', backgroundColor: '#ef7878' }
-        },
-        {
-          headerName: 'Nº Título',
-          field: 'registryId'
-        },
-
-        {
-          headerName: 'Local de Votação',
-          field: 'place',
-          filter: true,
-          floatingFilter: true
-        },
-        {
-          headerName: 'Zona',
-          field: 'zone',
-          filter: true,
-          floatingFilter: true
-        },
-        {
-          headerName: 'Seção',
-          field: 'section',
-          filter: true,
-          floatingFilter: true
-        },
-        {
-          headerName: 'Situação Eleitoral',
-          field: 'situation',
-          filter: true,
-          floatingFilter: true,
-          valueFormatter: params => {
-            if (params.value === null) return 'Não Validado';
-            return params.value
-              .split(' ')
-              .map(
-                word =>
-                  word.charAt(0).toUpperCase() + word.substring(1).toLowerCase()
-              )
-              .join(' ');
-          }
+          field: 'genero',
+          width: 120,
+          filter: true
         }
       ];
     }
@@ -184,26 +227,60 @@ const GridManagement = ({ voterList }) => {
 
   useEffect(() => {
     if (!loading) {
-      const processedData = voterList.map(item => ({
-        ...item
+      const processedData = lawyerList.map(lawyer => ({
+        ...lawyer,
+        genero: determineGender(lawyer.nome)
       }));
       setRowData(processedData);
     }
-  }, [voterList, loading]);
+  }, [lawyerList, loading]);
 
   const rowClassRules = {
-    'rag-green': params => params.data.situation === 'REGULAR',
-    'rag-red': params => params.data.situation !== 'REGULAR',
-    'rag-gray': params => params.data.situation === null
-  };
-
-  const ragCellClassRules = {
-    'rag-red': params => params.situation === 'REGULAR'
+    'rag-green': params =>
+      params.data.voters &&
+      params.data.voters[0] &&
+      params.data.voters[0].status === 'ACCEPTED',
+    'rag-red': params =>
+      params.data.voters &&
+      params.data.voters[0] &&
+      params.data.voters[0].status === 'REJECTED',
+    'rag-orange': params =>
+      params.data.voters &&
+      params.data.voters[0] &&
+      params.data.voters[0].status === 'IN_PROGRESS',
+    'rag-gray': params =>
+      !params.data.voters ||
+      params.data.voters.length === 0 ||
+      params.data.voters[0].status === null
   };
 
   const clearFilters = () => {
     if (gridApiRef.current) {
       gridApiRef.current.setFilterModel(null);
+    }
+    setSearchQuery('');
+  };
+
+  const handleShowModal = () => {
+    setConfirmShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setConfirmShowModal(false);
+  };
+
+  const handleConfirm = () => {
+    setConfirmShowModal(false);
+    if (gridApiRef.current) {
+      const selectedNodes = gridApiRef.current.getSelectedNodes();
+      const selectedData = selectedNodes.map(node => ({
+        id: node.data.id,
+        address: `${node.data.endereco} nº ${node.data.numero}, ${node.data.bairro} - ${node.data.cidade}/${node.data.estado}`
+      }));
+
+      console.log('selectedData', selectedData);
+
+      handleNewVoter(selectedData);
     }
   };
 
@@ -212,31 +289,178 @@ const GridManagement = ({ voterList }) => {
     updateColumnWidths();
   };
 
-  const updateColumnWidths = () => {
-    if (!gridRef.current) return;
+  const updateSelection = () => {
+    if (gridApiRef.current) {
+      const selectedNodes = gridApiRef.current.getSelectedNodes();
+      setIsDisabled(selectedNodes.length === 0);
+    }
+  };
 
-    gridRef.current.getColumnDefs().forEach(colDef => {
+  const updateColumnWidths = () => {
+    if (!gridApiRef.current) return;
+
+    const columnDefs = gridApiRef.current.getColumnDefs();
+    columnDefs.forEach(colDef => {
       if (colDef.field === 'value') {
-        const maxWidth = data.reduce(
-          (max, row) => Math.max(max, row[colDef.field].length * 10),
+        const maxWidth = rowData.reduce(
+          (max, row) => Math.max(max, row[colDef.field]?.length * 10 || 0),
           100
         );
-        gridRef.current
-          .getColumnState()
-          .find(col => col.colId === colDef.field).width = maxWidth;
+        colDef.width = maxWidth;
       }
     });
 
-    gridRef.current.onColumnEverythingChanged();
+    gridApiRef.current.setColumnDefs(columnDefs);
   };
+
+  const totalPages = Math.ceil(totalLawyers / limit);
+
+  function determineGender(fullName) {
+    const firstName = fullName.toLowerCase().split(' ')[0].toLowerCase();
+
+    const commonFemaleNames = [
+      'maria',
+      'ana',
+      'joana',
+      'marina',
+      'letícia',
+      'camila',
+      'adriana',
+      'lúcia',
+      'alexandra',
+      'abigail',
+      'agnes',
+      'tamires',
+      'thamires'
+    ];
+    const commonMaleNames = [
+      'joão',
+      'carlos',
+      'pedro',
+      'mario',
+      'adilson',
+      'jose',
+      'luiz',
+      'antonio',
+      'paulo',
+      'alexandre',
+      'alan',
+      'adonias',
+      'alex'
+    ];
+
+    if (commonFemaleNames.includes(firstName)) {
+      return 'Feminino';
+    }
+
+    if (commonMaleNames.includes(firstName)) {
+      return 'Masculino';
+    }
+
+    const femaleSuffixes = [
+      'a',
+      'e',
+      'i',
+      'y',
+      'ia',
+      'ina',
+      'ara',
+      'ana',
+      'isa',
+      'ela',
+      'ina',
+      'ete',
+      'ine',
+      'triz',
+      'em'
+    ];
+
+    const maleSuffixes = [
+      'o',
+      'r',
+      'u',
+      'l',
+      'ão',
+      'el',
+      'mar',
+      'nor',
+      'eiro',
+      'nho',
+      'gno',
+      'on',
+      'om',
+      'an'
+    ];
+
+    for (let suffix of femaleSuffixes) {
+      if (firstName.endsWith(suffix)) {
+        return 'Feminino';
+      }
+    }
+
+    for (let suffix of maleSuffixes) {
+      if (firstName.endsWith(suffix)) {
+        return 'Masculino';
+      }
+    }
+
+    return determineGender2(firstName) || 'Indefinido';
+  }
+
+  function determineGender2(fullName) {
+    const firstName = fullName.toLowerCase().split(' ')[0].toLowerCase();
+
+    const gender = getGender(firstName, 'es');
+    if (gender === 'male') {
+      return 'masculino';
+    } else if (gender === 'female') {
+      return 'feminino';
+    } else {
+      return 'desconhecido';
+    }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <ButtonGroup style={{ width: '150px' }}>
-        <Button onClick={clearFilters} variant="outline-success">
-          Limpar Filtros
-        </Button>
-      </ButtonGroup>
+      <CustomBtnGroup>
+        <ButtonGroup>
+          <Button
+            onClick={handleShowModal}
+            variant="outline-success"
+            disabled={isDisabled}
+          >
+            Novo apoio
+          </Button>
+          <Button onClick={clearFilters} variant="outline-success">
+            Limpar Filtros
+          </Button>
+          <Button
+            variant="outline-success"
+            onClick={() => {
+              fetchLawyers();
+              fetchDashboardData();
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              gap: '10px'
+            }}
+          >
+            <LuRefreshCw
+              style={{
+                fontSize: 20
+              }}
+            />
+          </Button>
+        </ButtonGroup>
+        <GridPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </CustomBtnGroup>
 
       {loading ? (
         <div>Carregando...</div>
@@ -249,14 +473,31 @@ const GridManagement = ({ voterList }) => {
             domLayout="autoHeight"
             rowSelection="multiple"
             enableCellTextSelection={true}
-            clipboardOptions={{
-              copyHeadersToClipboard: true
-            }}
+            clipboardOptions={{ copyHeadersToClipboard: true }}
+            suppressRowClickSelection={true}
+            onSelectionChanged={updateSelection}
             rowClassRules={rowClassRules}
-            ena
           />
         </div>
       )}
+
+      <Modal show={showConfirmModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirmação!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Confirma o envio dos dados selecionados para ser cadastrado como
+          possível novo apoio?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-custom" onClick={handleCloseModal}>
+            Não
+          </Button>
+          <Button variant="custom" onClick={handleConfirm}>
+            Sim
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

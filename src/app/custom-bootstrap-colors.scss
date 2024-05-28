@@ -1,1 +1,33 @@
+@import '~bootstrap/scss/functions';
+$theme-colors: (
+  'primary': #403c3f,
+  'secondary': #6c5c6e,
+  'success': #5e8571,
+  'info': #6e8a94,
+  'warning': #8c7c5e,
+  'danger': #8a5e5e,
+  'light': #e0e0e0,
+  'dark': #2b2b2b,
+  'custom': #403c3f
+);
+
+$custom-colors: (
+  'lighter': #dcd9dc,
+  'lightest': #f5f3f5,
+  'darker': #2e2b2e,
+  'darkest': #1b1a1b
+);
+
+@import '~bootstrap/scss/variables';
+
+$body-bg: map-get($custom-colors, 'lightest');
+$body-color: map-get($custom-colors, 'darker');
+
+$btn-primary-bg: map-get($theme-colors, 'primary');
+$btn-primary-border: darken(map-get($theme-colors, 'primary'), 10%);
+$btn-secondary-bg: map-get($theme-colors, 'secondary');
+$btn-secondary-border: darken(map-get($theme-colors, 'secondary'), 10%);
+
+$border-color: map-get($custom-colors, 'lighter');
+
 @import '~bootstrap/scss/bootstrap.scss';

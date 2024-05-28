@@ -79,7 +79,6 @@ const cleanPhoneNumber = phoneNumber => {
 const validationSchema = Yup.object().shape({
   nome: Yup.string().required('Nome é obrigatório'),
   email: Yup.string().required('Email é obrigatório'),
-  meta: Yup.string().required('Meta é obrigatório'),
   celular: Yup.string()
     .required('Celular obrigatório')
     .transform(value => value.replace(/\D/g, ''))
@@ -91,15 +90,15 @@ const validationSchema = Yup.object().shape({
 
 const Pillar = ({ managedBy, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
-  const [pillars, setPillars] = useState([]);
-  const [searchPillarResult, setSearchPilllarResult] = useState([]);
+  const [coordenators, setCoordenators] = useState([]);
+  const [searchCoordResult, setSearchCoordResult] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const handleCloseEditModal = () => setShowEditModal(false);
   const handleShowEditModal = () => setShowEditModal(true);
-  const [selectedPillar, setSelectedPillar] = useState(null);
+  const [selectedCoord, setSelectedCoord] = useState(null);
 
   const handleInputChange = event => {
     const { name, value } = event.target;
@@ -116,18 +115,16 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       name: values.nome,
       email: values.email,
       cellPhone: cleanPhoneNumber(values.celular),
-      meta: Number(values.meta) || 100,
-      roleId: 2,
-      managedBy
+      roleId: 2
     };
 
     const response = await api
-      .post('/usersTC', formattedValues)
+      .post('/lawyer/create_user', formattedValues)
       .then(response => {
         resetForm();
         setShowModal(false);
-        showSnackbar('Pilar cadastrado com sucesso!', 'success');
-        fetchPilars();
+        showSnackbar('Coordenador cadastrado com sucesso!', 'success');
+        fetchCoords();
         fetchDashboardData();
       })
       .catch(error => {
@@ -137,66 +134,44 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     setSubmitting(false);
   };
 
-  function fetchPilars() {
+  function fetchCoords() {
     api
-      .get(`/usersTC/pillars`)
+      .get(`/lawyer/coordenators`)
       .then(response => {
-        setPillars([]);
-        setPillars(response.data);
-        setSearchPilllarResult(response.data);
+        setCoordenators([]);
+        setCoordenators(response.data);
+        setSearchCoordResult(response.data);
       })
       .catch(() => {})
       .finally(() => {});
   }
 
   useEffect(() => {
-    fetchPilars();
+    fetchCoords();
   }, []);
 
-  function sumAllOwnedVoters(manages, ownedVoters) {
-    let totalVoters = 0;
-
-    manages.forEach(manage => {
-      totalVoters += manage.ownedVoters.length;
-    });
-
-    return totalVoters + ownedVoters;
-  }
-
-  function calcPercentageMeta(totalVoters, meta) {
-    if (
-      typeof totalVoters !== 'number' ||
-      typeof meta !== 'number' ||
-      meta === 0
-    ) {
-      return 0;
-    }
-    return ((totalVoters * 100) / meta.toFixed(2)).toFixed(2);
-  }
-
-  async function handleEditPillar(pillar) {
-    setSelectedPillar(pillar);
+  async function handleEditPillar(coord) {
+    setSelectedCoord(coord);
     handleShowEditModal();
   }
 
-  const handleUpdatePillar = async (values, { setSubmitting, resetForm }) => {
-    var updatePillarData = {
+  const handleUpdateCoord = async (values, { setSubmitting, resetForm }) => {
+    var updateCoordData = {
       id: values.id,
       name: values.nome,
       email: values.email,
-      meta: Number(values.meta) || 100,
       status: values.status,
       cellPhone: cleanPhoneNumber(values.celular),
       roleId: Number(values.roleId)
     };
 
     api
-      .patch('/usersTC', updatePillarData)
+      .patch('/lawyer/update_user', updateCoordData)
       .then(response => {
         resetForm();
         handleCloseEditModal();
-        showSnackbar('Pilar atualizado com sucesso!', 'success');
-        fetchPilars();
+        showSnackbar('Coordenador atualizado com sucesso!', 'success');
+        fetchCoords();
         fetchDashboardData();
       })
       .catch(error => {
@@ -210,7 +185,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     setSubmitting(true);
 
     api
-      .patch('/usersTC/newPassword', { id, email })
+      .patch('/lawyer/newPassword', { id, email })
       .then(response => {
         handleCloseEditModal();
         showSnackbar('Nova senha enviada com sucesso!', 'success');
@@ -237,7 +212,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     };
 
     return (
-      <Form.Group className="mb-3" style={{ width: '60%' }}>
+      <Form.Group className="mb-3">
         <Form.Label>{label}</Form.Label>
         <InputMask
           {...field}
@@ -269,10 +244,10 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       }}
     >
       <Search
-        data={pillars}
+        data={coordenators}
         fields={['name', 'email']}
         placeholder="Busque por pilares..."
-        setSearchResult={setSearchPilllarResult}
+        setSearchResult={setSearchCoordResult}
       />
       <ButtonGroup>
         <Button
@@ -286,7 +261,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             gap: '10px'
           }}
         >
-          Novo Pilar
+          Novo Coordenador
           <FaUserShield
             style={{
               fontSize: 20
@@ -296,7 +271,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         <Button
           variant="outline-success"
           onClick={() => {
-            fetchPilars();
+            fetchCoords();
             fetchDashboardData();
           }}
           style={{
@@ -315,7 +290,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         </Button>
       </ButtonGroup>
 
-      {searchPillarResult.length > 0 ? (
+      {searchCoordResult.length > 0 ? (
         <div
           style={{
             display: 'flex',
@@ -324,20 +299,12 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             gap: '10px'
           }}
         >
-          {[...searchPillarResult]
+          {[...searchCoordResult]
             .sort((a, b) => {
-              const totalVotersA = sumAllOwnedVoters(
-                a.manages,
-                a.ownedVoters.length
-              );
-              const totalVotersB = sumAllOwnedVoters(
-                b.manages,
-                b.ownedVoters.length
-              );
-              return totalVotersB - totalVotersA;
+              return b.ownedVoters.length - a.ownedVoters.length;
             })
-            .map((pillar, index) => (
-              <div key={pillar.id} style={{ width: '311px' }}>
+            .map((coord, index) => (
+              <div key={coord.id} style={{ width: '311px' }}>
                 <Card>
                   <Card.Body>
                     <Card.Title
@@ -352,10 +319,10 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         delay={{ show: 250, hide: 400 }}
                         overlay={
                           <Tooltip
-                            id={`tooltip-${pillar.id}`}
+                            id={`tooltip-${coord.id}`}
                             className="custom-tooltip-inner"
                           >
-                            Editar dados do pilar
+                            Editar dados do coordenador
                           </Tooltip>
                         }
                       >
@@ -364,7 +331,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                             onClick={event => {
                               event.preventDefault();
                               event.stopPropagation();
-                              handleEditPillar(pillar);
+                              handleEditPillar(coord);
                             }}
                             style={{
                               cursor: 'pointer',
@@ -375,7 +342,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                           />
                         </span>
                       </OverlayTrigger>
-                      {pillar.name}
+                      {coord.name}
                     </Card.Title>
                     <Card.Subtitle
                       className="mb-2 text-muted"
@@ -385,7 +352,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      {pillar.email}
+                      {coord.email}
                     </Card.Subtitle>
                     <Card.Text
                       as="div"
@@ -395,24 +362,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         justifyContent: 'space-between'
                       }}
                     >
-                      <div>
-                        Apoiadores:{' '}
-                        {sumAllOwnedVoters(
-                          pillar.manages,
-                          pillar.ownedVoters.length
-                        )}
-                      </div>
-                      <div>Meta: {pillar.meta || 0}</div>
-                      <div>
-                        {calcPercentageMeta(
-                          sumAllOwnedVoters(
-                            pillar.manages,
-                            pillar.ownedVoters.length
-                          ),
-                          pillar.meta
-                        )}
-                        %
-                      </div>
+                      <div>Apoiadores: {coord.ownedVoters.length}</div>
                     </Card.Text>
                   </Card.Body>
                 </Card>
@@ -433,7 +383,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Novo Pilar</Modal.Title>
+          <Modal.Title>Novo Coordenador</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
@@ -441,9 +391,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
               nome: '',
               email: '',
               celular: '',
-              meta: 100,
               roleId: 2,
-              managedBy,
               status
             }}
             validationSchema={validationSchema}
@@ -463,35 +411,13 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                     {errors.nome}
                   </Form.Control.Feedback>
                 </Form.Group>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    gap: '10px'
-                  }}
-                >
-                  <Form.Group className="mb-3" style={{ width: '40%' }}>
-                    <Form.Label>Meta</Form.Label>
-                    <Field
-                      as={Form.Control}
-                      type="text"
-                      name="meta"
-                      isInvalid={!!errors.meta && touched.meta}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.meta}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Field
-                    name="celular"
-                    label="Celular"
-                    mask="(99) 9 9999-9999"
-                    maskChar=" "
-                    component={CustomPhoneInputMask}
-                  />
-                </div>
+                <Field
+                  name="celular"
+                  label="Celular"
+                  mask="(99) 9 9999-9999"
+                  maskChar=" "
+                  component={CustomPhoneInputMask}
+                />
                 <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
                   <Field
@@ -536,22 +462,21 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Editar Pilar</Modal.Title>
+          <Modal.Title>Editar Coordenador</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedPillar && (
+          {selectedCoord && (
             <Formik
               initialValues={{
-                id: selectedPillar.id,
-                nome: selectedPillar.name,
-                email: selectedPillar.email,
-                celular: selectedPillar.cellPhone,
-                meta: selectedPillar.meta,
-                status: selectedPillar.status,
-                roleId: selectedPillar.roleId
+                id: selectedCoord.id,
+                nome: selectedCoord.name,
+                email: selectedCoord.email,
+                celular: selectedCoord.cellPhone,
+                status: selectedCoord.status,
+                roleId: selectedCoord.roleId
               }}
               validationSchema={validationSchema}
-              onSubmit={handleUpdatePillar}
+              onSubmit={handleUpdateCoord}
             >
               {({ values, setSubmitting, isSubmitting, errors, touched }) => (
                 <FormikForm>
@@ -583,34 +508,13 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       {errors.email}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      flexDirection: 'row',
-                      gap: '10px'
-                    }}
-                  >
-                    <Form.Group className="mb-3" style={{ width: '40%' }}>
-                      <Form.Label>Meta</Form.Label>
-                      <Field
-                        as={Form.Control}
-                        type="text"
-                        name="meta"
-                        isInvalid={!!errors.meta && touched.meta}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.meta}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                    <Field
-                      name="celular"
-                      label="Celular"
-                      mask="(99) 9 9999-9999"
-                      maskChar=" "
-                      component={CustomPhoneInputMask}
-                    />
-                  </div>
+                  <Field
+                    name="celular"
+                    label="Celular"
+                    mask="(99) 9 9999-9999"
+                    maskChar=" "
+                    component={CustomPhoneInputMask}
+                  />
                   <div
                     style={{
                       display: 'flex',
@@ -621,10 +525,6 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                     <MySelect label="Status" name="status" width="50%">
                       <option value="ACTIVE">Ativo</option>
                       <option value="INACTIVE">Inativo</option>
-                    </MySelect>
-                    <MySelect label="Papel" name="roleId" width="50%">
-                      <option value="2">Pilar</option>
-                      <option value="3">Lider</option>
                     </MySelect>
                   </div>
                   <div

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { BsEyeSlash, BsEye } from 'react-icons/bs';
 import { Alert, Form, Button, InputGroup } from 'react-bootstrap';
+import '../../../app/custom-bootstrap-colors.scss';
 import Box from '../../../components/layout/box';
 import { ContextUser } from '../../../providers/ContextUser';
 import {
@@ -10,6 +11,8 @@ import {
   CustomInputGroup
 } from '../styled';
 import SubmitButton from '../../../components/form/submit-button';
+
+const handleAction = () => {};
 
 const Login = ({ handleAction }) => {
   const [warning, setWarning] = useState();
@@ -83,6 +86,7 @@ const Login = ({ handleAction }) => {
                 loading={requesting}
                 block={false}
                 fullwidth
+                variant="custom"
               >
                 Entrar
               </SubmitButton>

@@ -84,6 +84,18 @@ const VoterInfoContainer = styled.div`
   }
 `;
 
+const CustomFieldContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+`;
+
+const CustomModal = styled(Modal)`
+  .modal-dialog {
+    max-width: 80%;
+  }
+`;
+
 const CustomSelect = ({ label, ...props }) => {
   const [field, meta] = useField(props);
   return (
@@ -105,7 +117,24 @@ const cleanPhoneNumber = phoneNumber => {
   return phoneNumber.replace(/\D/g, '');
 };
 
-const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
+const MySelect = ({ label, width, ...props }) => {
+  const [field, meta] = useField(props);
+  return (
+    <Form.Group className="mb-3" style={{ width: width }}>
+      <Form.Label>{label}</Form.Label>
+      <Form.Control
+        as="select"
+        {...field}
+        isInvalid={!!meta.error && meta.touched}
+      >
+        {props.children}
+      </Form.Control>
+      <Form.Control.Feedback type="invalid">{meta.error}</Form.Control.Feedback>
+    </Form.Group>
+  );
+};
+
+const PageVoter = ({ voters, ownerId, fetchVoters, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const { role } = currentUser;
   const [showModal, setShowModal] = useState(false);
@@ -191,18 +220,16 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   }
 
   const handleUpdateVoter = async (values, { setSubmitting, resetForm }) => {
-    const formattedBirthDate = moment(values.dataNascimento).toISOString();
     var updateVoterData = {
       id: values.id,
-      name: values.nome,
-      motherName: values.nomeMae,
-      birthDate: values.dataNascimento,
-      gender: values.genero,
-      cellPhone: cleanPhoneNumber(values.celular)
+      observation: values.observacao,
+      status: values.status
     };
 
+    console.log('updateVoterData', updateVoterData);
+
     api
-      .patch('/votersTC', updateVoterData)
+      .patch('/lawyer/updateVoterFCD', updateVoterData)
       .then(response => {
         resetForm();
         handleCloseEditModal();
@@ -288,18 +315,12 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
   const getValidVoter = placeDistrict => {
     return (
       placeDistrict === null ||
-      placeDistrict === "**********" ||
+      placeDistrict === '**********' ||
       placeDistrict.toLowerCase().includes('guarulhos')
     );
   };
 
   function getResponsibleDesc(owner) {
-    const roleDescriptions = {
-      ADMIN: '',
-      PILLAR: 'Pilar',
-      LEADER: 'Líder'
-    };
-
     const personDesc = `${
       roleDescriptions[owner.role] ? roleDescriptions[owner.role] + ': ' : ''
     }${owner.name.trim()}`;
@@ -370,29 +391,11 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
     >
       <Search
         data={voters}
-        fields={['name', 'email']}
+        fields={['lawyer.nome', 'lawyer.endereco']}
         placeholder="Busque por apoiadores..."
         setSearchResult={setSearchVoterResult}
       />
       <ButtonGroup>
-        <Button
-          variant="outline-success"
-          onClick={handleShowModal}
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-        >
-          Novo apoiador
-          <FaUserCheck
-            style={{
-              fontSize: 20
-            }}
-          />
-        </Button>
         <Button
           variant="outline-success"
           onClick={() => {
@@ -427,7 +430,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
           }}
         >
           {[...searchVoterResult]
-            .sort((a, b) => a.name.localeCompare(b.name))
+            .sort((a, b) => a.lawyer.nome.localeCompare(b.lawyer.nome))
             .map((voter, index) => (
               <Accordion
                 key={voter.id}
@@ -443,27 +446,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                     }}
                   >
                     <VoterInfoContainer>
-                      <div
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          justifyContent: 'flex-start',
-                          alignItems: 'center',
-                          gap: '5px',
-                          color: getValidVoter(voter.placeDistrict)
-                            ? undefined
-                            : '#f94848',
-                          fontWeight: getValidVoter(voter.placeDistrict)
-                            ? undefined
-                            : 'bold'
-                        }}
-                      >
-                        {`#${voter.id} - ${voter.name}${
-                          getValidVoter(voter.placeDistrict)
-                            ? ''
-                            : ' - (local inválido)'
-                        }`}
-                      </div>
+                      <div>{`#${voter.id} - ${voter.lawyer.nome}`}</div>
 
                       <div
                         style={{
@@ -481,139 +464,25 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                           delay={{ show: 250, hide: 400 }}
                           overlay={
                             <Tooltip
-                              id={`tooltip-${voter.id}-delete`}
-                              className="custom-tooltip-inner"
-                              style={{
-                                display: voter.responseText ? undefined : 'none'
-                              }}
-                            >
-                              {voter.responseText}
-                            </Tooltip>
-                          }
-                        >
-                          <span>
-                            <div
-                              style={{
-                                color:
-                                  voter.situation !== null
-                                    ? getColor(voter.situation)
-                                    : voter.registryId
-                                    ? getColor('INCOMPLETO')
-                                    : getColor('NÃO VALIDADO'),
-                                border: `1px solid ${
-                                  voter.situation !== null
-                                    ? getColor(voter.situation)
-                                    : voter.registryId
-                                    ? getColor('INCOMPLETO')
-                                    : getColor('NÃO VALIDADO')
-                                }`,
-                                padding: '2px 10px 1px 10px',
-                                borderRadius: '10px',
-                                fontSize: '12px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                fontWeight: '900'
-                              }}
-                            >
-                              {voter.situation !== null
-                                ? voter.situation
-                                : voter.registryId
-                                ? 'INCOMPLETO'
-                                : 'NÃO VALIDADO'}
-                            </div>
-                          </span>
-                        </OverlayTrigger>
-                        {(voter.registryId === null ||
-                          voter.situation !== 'REGULAR') && (
-                          <>
-                            {loadingInfos[voter.id] ? (
-                              <Spinner
-                                variant="success"
-                                style={{ width: '20px', height: '20px' }}
-                              />
-                            ) : (
-                              role.name === 'ADMIN' && (
-                                <OverlayTrigger
-                                  placement="bottom-start"
-                                  delay={{ show: 250, hide: 400 }}
-                                  overlay={
-                                    <Tooltip
-                                      id={`tooltip-${voter.id}`}
-                                      className="custom-tooltip-inner"
-                                    >
-                                      Buscar dados complementares
-                                    </Tooltip>
-                                  }
-                                >
-                                  <span style={{ width: '20px' }}>
-                                    <SiReacthookform
-                                      onClick={event => {
-                                        event.preventDefault();
-                                        event.stopPropagation();
-                                        handleSearchInfos(voter);
-                                      }}
-                                      style={{
-                                        fontSize: '18px',
-                                        color: 'green',
-                                        strokeWidth: '1px',
-                                        cursor: 'pointer'
-                                      }}
-                                    />
-                                  </span>
-                                </OverlayTrigger>
-                              )
-                            )}
-                            <OverlayTrigger
-                              placement="bottom-start"
-                              delay={{ show: 250, hide: 400 }}
-                              overlay={
-                                <Tooltip
-                                  id={`tooltip-${voter.id}`}
-                                  className="custom-tooltip-inner"
-                                >
-                                  Editar dados do apoiador
-                                </Tooltip>
-                              }
-                            >
-                              <span style={{ width: '20px' }}>
-                                <FaUserEdit
-                                  onClick={event => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    handleEditVoter(voter);
-                                  }}
-                                  style={{
-                                    cursor: 'pointer',
-                                    color: '#007bff',
-                                    fontSize: '20px',
-                                    marginRight: '10px'
-                                  }}
-                                />
-                              </span>
-                            </OverlayTrigger>
-                          </>
-                        )}
-
-                        <OverlayTrigger
-                          placement="bottom-start"
-                          delay={{ show: 250, hide: 400 }}
-                          overlay={
-                            <Tooltip
-                              id={`tooltip-${voter.id}-delete`}
+                              id={`tooltip-${voter.id}`}
                               className="custom-tooltip-inner"
                             >
-                              Excluir apoiador
+                              Editar dados do apoiador
                             </Tooltip>
                           }
                         >
                           <span style={{ width: '20px' }}>
-                            <RiDeleteBin5Line
-                              onClick={() => handleRemoveVoter(voter)}
+                            <FaUserEdit
+                              onClick={event => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleEditVoter(voter);
+                              }}
                               style={{
                                 cursor: 'pointer',
-                                color: '#dc3545',
-                                fontSize: '20px'
+                                color: '#007bff',
+                                fontSize: '20px',
+                                marginRight: '10px'
                               }}
                             />
                           </span>
@@ -631,73 +500,80 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
                   >
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Nome da mãe:
+                        Subseção:
                       </label>
-                      <span>{voter.motherName}</span>
+                      <span>{voter.lawyer.subsecao}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Data de nascimento:
+                        Inscrição:
                       </label>
-                      <span>
-                        {moment(voter.birthDate).utc().format('DD/MM/YYYY')}
-                      </span>
+                      <span>{voter.lawyer.inscricao}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                        Tipo:
+                      </label>
+                      <span>{voter.lawyer.tipo}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                        Endereco:
+                      </label>
+                      <span>{`${voter.lawyer.endereco}, nº ${
+                        voter.lawyer.numero
+                      }${
+                        voter.lawyer.complemento
+                          ? ` - ${voter.lawyer.complemento}`
+                          : ''
+                      }`}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                        CEP:
+                      </label>
+                      <span>{voter.lawyer.cep}</span>
+                    </div>
+
+                    <div>
+                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
+                        Bairro:
+                      </label>
+                      <span>{voter.lawyer.bairro}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
                         Telefone:
                       </label>
-                      <span>{voter.cellPhone}</span>
+                      <span>{voter.lawyer.telefone}</span>
                     </div>
                     <div>
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Gênero:
+                        Celular:
                       </label>
-                      <span>{voter.gender}</span>
+                      <span>{voter.lawyer.celular}</span>
                     </div>
 
-                    <div>
+                    <div
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #dcd9dc',
+                        borderRadius: '5px',
+                        backgroundColor: '#d1d1d1'
+                      }}
+                    >
                       <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Escola:
+                        Observação:
                       </label>
-                      <span>{voter.place}</span>
+                      <span>{voter.observation}</span>
                     </div>
-                    <div>
-                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Endereço:
-                      </label>
-                      <span>{voter.placeAddress}</span>
-                    </div>
-                    <div>
-                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Cidade/UF:
-                      </label>
-                      <span>{voter.placeDistrict}</span>
-                    </div>
-                    <div>
-                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Título:
-                      </label>
-                      <span>{voter.registryId}</span>
-                    </div>
-                    <div>
-                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Zona:
-                      </label>
-                      <span>{voter.zone}</span>
-                    </div>
-                    <div>
-                      <label style={{ fontWeight: 'bold', marginRight: '5px' }}>
-                        Seção:
-                      </label>
-                      <span>{voter.section} </span>
-                    </div>
+
                     {role.name === 'ADMIN' && (
                       <div>
                         <hr style={{ margin: '2px' }} />
                         <div>
                           <ResponsibleDesc>
-                            {getResponsibleDesc(voter.owner)}
+                            {`Responsável: ${voter.owner.name}`}
                           </ResponsibleDesc>
                         </div>
                       </div>
@@ -714,121 +590,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
         </EmptyContainer>
       )}
 
-      <Modal
-        show={showModal}
-        onHide={handleCloseModal}
-        backdrop="static"
-        keyboard={false}
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>Novo Apoiador</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Formik
-            initialValues={{
-              nome: '',
-              nomeMae: '',
-              dataNascimento: '',
-              genero: '',
-              celular: '',
-              ownerId
-            }}
-            validationSchema={validationSchema}
-            onSubmit={handleSubmit}
-          >
-            {({ isSubmitting, errors, touched }) => (
-              <FormikForm>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nome</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="text"
-                    name="nome"
-                    isInvalid={!!errors.nome && touched.nome}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.nome}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Nome da Mãe</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="text"
-                    name="nomeMae"
-                    isInvalid={!!errors.nomeMae && touched.nomeMae}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.nomeMae}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Data de Nascimento</Form.Label>
-                  <Field
-                    as={Form.Control}
-                    type="date"
-                    name="dataNascimento"
-                    isInvalid={
-                      !!errors.dataNascimento && touched.dataNascimento
-                    }
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.dataNascimento}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'baseline',
-                    gap: '10px'
-                  }}
-                >
-                  <CustomSelect
-                    label="Gênero"
-                    name="genero"
-                    style={{ with: '50%' }}
-                  >
-                    <option value="">Selecione um gênero</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                  </CustomSelect>
-                  <Field
-                    name="celular"
-                    label="Celular"
-                    mask="(99) 9 9999-9999"
-                    maskChar=" "
-                    component={CustomPhoneInputMask}
-                  />
-                </div>
-
-                <div
-                  style={{ display: 'flex', justifyContent: 'space-between' }}
-                >
-                  <Button
-                    variant="light"
-                    disabled={isSubmitting}
-                    onClick={handleCloseModal}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    Cadastrar
-                  </Button>
-                </div>
-              </FormikForm>
-            )}
-          </Formik>
-        </Modal.Body>
-      </Modal>
-
-      <Modal
+      <CustomModal
         show={showEditModal}
         onHide={handleCloseEditModal}
         backdrop="static"
@@ -842,88 +604,159 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
             <Formik
               initialValues={{
                 id: selectedVoter.id,
-                nome: selectedVoter.name,
-                nomeMae: selectedVoter.motherName,
-                dataNascimento: moment(selectedVoter.birthDate)
-                  .utc()
-                  .format('YYYY-MM-DD'),
-                genero: selectedVoter.gender,
-                celular: selectedVoter.cellPhone,
-                ownerId: selectedVoter.owner.id
+                nome: selectedVoter.lawyer.nome,
+                subsecao: selectedVoter.lawyer.subsecao,
+                tipo: selectedVoter.lawyer.tipo,
+                celular: selectedVoter.lawyer.celular,
+                telefone: selectedVoter.lawyer.telefone,
+                endereco: `${selectedVoter.lawyer.endereco}, nº ${
+                  selectedVoter.lawyer.numero
+                }${
+                  selectedVoter.lawyer.complemento
+                    ? ` - ${selectedVoter.lawyer.complemento}`
+                    : ''
+                }`,
+                cep: selectedVoter.lawyer.cep,
+                bairro: selectedVoter.lawyer.bairro,
+                observacao: selectedVoter.observation,
+                status: selectedVoter.status
               }}
-              validationSchema={validationSchema}
               onSubmit={handleUpdateVoter}
             >
-              {({ isSubmitting, errors, touched }) => (
+              {({ isSubmitting, errors, touched, values, handleChange }) => (
                 <FormikForm>
+                  <CustomFieldContainer>
+                    <Form.Group className="mb-3" style={{ width: '15%' }}>
+                      <Form.Label>Id</Form.Label>
+                      <Field as={Form.Control} type="text" name="id" disabled />
+                    </Form.Group>
+                    <Form.Group className="mb-3" style={{ width: '85%' }}>
+                      <Form.Label>Nome</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="nome"
+                        disabled
+                        isInvalid={!!errors.nome && touched.nome}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.nome}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </CustomFieldContainer>
                   <Form.Group className="mb-3">
-                    <Form.Label>Id</Form.Label>
-                    <Field as={Form.Control} type="text" name="id" disabled />
+                    <Form.Label>Observação</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      type="text"
+                      name="observacao"
+                      isInvalid={!!errors.observacao && touched.observacao}
+                      value={values.observacao}
+                      onChange={handleChange}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.observacao}
+                    </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Nome</Form.Label>
+
+                  <CustomFieldContainer>
+                    <Form.Group className="mb-3" style={{ width: '35%' }}>
+                      <Form.Label>Subseção</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="subsecao"
+                        disabled
+                        isInvalid={!!errors.subsecao && touched.subsecao}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.subsecao}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.Group className="mb-3" style={{ width: '35%' }}>
+                      <Form.Label>Tipo</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="tipo"
+                        disabled
+                        isInvalid={!!errors.tipo && touched.tipo}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.tipo}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <MySelect label="Status" name="status" width="30%">
+                      <option value="IN_PROGRESS">Em andamento</option>
+                      <option value="ACCEPTED">Confirmado</option>
+                      <option value="REJECTED">Rejeitado</option>
+                    </MySelect>
+                  </CustomFieldContainer>
+
+                  <CustomFieldContainer>
+                  <Form.Group className="mb-3" style={{ width: '50%' }}>
+                    <Form.Label>Endereço</Form.Label>
                     <Field
                       as={Form.Control}
                       type="text"
-                      name="nome"
-                      isInvalid={!!errors.nome && touched.nome}
+                      name="endereco"
+                      disabled
+                      isInvalid={!!errors.tipo && touched.tipo}
                     />
                     <Form.Control.Feedback type="invalid">
-                      {errors.nome}
+                      {errors.endereco}
                     </Form.Control.Feedback>
                   </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Nome da Mãe</Form.Label>
-                    <Field
-                      as={Form.Control}
-                      type="text"
-                      name="nomeMae"
-                      isInvalid={!!errors.nomeMae && touched.nomeMae}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.nomeMae}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Data de Nascimento</Form.Label>
-                    <Field
-                      as={Form.Control}
-                      type="date"
-                      name="dataNascimento"
-                      isInvalid={
-                        !!errors.dataNascimento && touched.dataNascimento
-                      }
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.dataNascimento}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'baseline',
-                      gap: '10px'
-                    }}
-                  >
-                    <CustomSelect
-                      label="Gênero"
-                      name="genero"
-                      style={{ with: '50%' }}
-                    >
-                      <option value="">Selecione um gênero</option>
-                      <option value="M">Masculino</option>
-                      <option value="F">Feminino</option>
-                    </CustomSelect>
+                    <Form.Group className="mb-3" style={{ width: '25%' }}>
+                      <Form.Label>CEP</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="cep"
+                        disabled
+                        isInvalid={!!errors.cep && touched.cep}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.cep}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" style={{ width: '25%' }}>
+                      <Form.Label>Bairro</Form.Label>
+                      <Field
+                        as={Form.Control}
+                        type="text"
+                        name="bairro"
+                        disabled
+                        isInvalid={!!errors.bairro && touched.bairro}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.bairro}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </CustomFieldContainer>
+
+                  <CustomFieldContainer>
                     <Field
                       name="celular"
                       label="Celular"
                       mask="(99) 9 9999-9999"
                       maskChar=" "
                       component={CustomPhoneInputMask}
+                      disabled
                     />
-                  </div>
+
+                    <Field
+                      name="telefone"
+                      label="Telefone"
+                      mask="(99) 9999-9999"
+                      maskChar=" "
+                      component={CustomPhoneInputMask}
+                      disabled
+                    />
+                  </CustomFieldContainer>
+
                   <div
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
@@ -947,7 +780,7 @@ const PageVoter = ({ voters, fetchVoters, ownerId, fetchDashboardData }) => {
             </Formik>
           )}
         </Modal.Body>
-      </Modal>
+      </CustomModal>
     </div>
   );
 };
