@@ -137,11 +137,9 @@ const Header = () => {
     return <>carregando</>;
   }
 
-  function handleCopySelfURL() {    
+  function handleCopySelfURL() {
     navigator.clipboard
-      .writeText(
-        `${baseURL}/${currentUser?.selfurl}`
-      )
+      .writeText(`${baseURL}/${currentUser?.selfurl}`)
       .then(() => {
         showSnackbar('URL auto cadastro copiada', 'info');
       })
@@ -152,26 +150,6 @@ const Header = () => {
 
   return (
     <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-      <Banner>
-        <div className="banner-header">FALTAM</div>
-        <div className="time" id="countdown">
-          <span id="days">{timeRemaining.days} DIAS</span>
-          <div
-            style={{
-              width: 'max-content',
-              display: 'flex',
-              gap: '10px'
-            }}
-          >
-            <span id="hours">{timeRemaining.hours} HORAS</span>
-            <span id="minutes">{timeRemaining.minutes} MINUTOS</span>
-            <span id="seconds">{timeRemaining.seconds} SEGUNDOS</span>
-          </div>
-        </div>
-        <div className="description">
-          Eleições Municipais 2024 - 1º Turno (06/10/2024)
-        </div>
-      </Banner>
       <div
         style={{
           display: 'flex',
@@ -235,44 +213,6 @@ const Header = () => {
             </>
           </Button>
         </Element>
-      </div>
-
-      <div style={{ color: '#49a9ff' }}>
-        <span
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            fontSize: '12px',
-            fontWeight: '600',
-            border: '1px solid',
-            borderRadius: '2px',
-            marginRight: '5px',
-            padding: '0 2px',
-            backgroundColor: '#eef0f1'
-          }}
-        >
-          {`${baseURL}/${currentUser?.selfurl}`}
-        </span>
-        <OverlayTrigger
-          placement="bottom-start"
-          delay={{ show: 250, hide: 400 }}
-          overlay={
-            <Tooltip className="custom-tooltip-inner">
-              Copiar url de auto cadastro
-            </Tooltip>
-          }
-        >
-          <span style={{ width: '20px' }}>
-            <TbCopyCheck
-              style={{
-                cursor: 'pointer',
-                fontSize: 18
-              }}
-              onClick={() => handleCopySelfURL()}
-            />
-          </span>
-        </OverlayTrigger>
       </div>
     </Box>
   );
