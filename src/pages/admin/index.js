@@ -208,7 +208,7 @@ const PageAdmin = () => {
                     dashboardData?.votersInfo?.totalValidatedVoters || 0}
                 </span>
                 <span style={{ fontSize: '14px' }}>
-                  Apoiadores não  validados
+                  Apoiadore não validados
                 </span>
               </div>
             </div>
