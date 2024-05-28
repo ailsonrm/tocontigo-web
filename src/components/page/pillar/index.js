@@ -358,8 +358,9 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       as="div"
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between'
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '5px'
                       }}
                     >
                       <div>Apoiadores: {coord.ownedVoters.length}</div>

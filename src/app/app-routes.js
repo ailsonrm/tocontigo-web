@@ -41,6 +41,8 @@ const AppRoutes = () => (
         </PrivateRoute>
       }
     />
+
+    <Route path="/self_register/:selfid" element={<PageSelfRegister />} />
   </Routes>
 );
 
