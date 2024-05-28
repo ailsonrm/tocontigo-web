@@ -3,6 +3,8 @@ import PrivateRoute from './private-route';
 import PublicRoute from './public-route';
 import PageAuth from '../pages/auth';
 import PageAdmin from '../pages/admin';
+import PagePillar from '../pages/pillar';
+import PageLeader from '../pages/leader';
 
 const AppRoutes = () => (
   <Routes>
@@ -14,6 +16,7 @@ const AppRoutes = () => (
         </PrivateRoute>
       }
     />
+
 
     <Route
       path="/acessar"
@@ -34,10 +37,19 @@ const AppRoutes = () => (
     />
 
     <Route
-      path="/manager"
+      path="/pillar"
       element={
         <PrivateRoute>
-          <PageAdmin />
+          <PagePillar />
+        </PrivateRoute>
+      }
+    />
+
+    <Route
+      path="/leader"
+      element={
+        <PrivateRoute>
+          <PageLeader />
         </PrivateRoute>
       }
     />

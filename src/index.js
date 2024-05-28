@@ -1,7 +1,6 @@
 import React, { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import './app/custom-bootstrap-colors.scss'; 
 
 import App from './app';
 import { GlobalStyle } from './app/globalStyles';

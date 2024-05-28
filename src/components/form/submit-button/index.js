@@ -21,12 +21,10 @@ function SubmitButton({
   type = 'submit',
   waitingMessage = 'carregando',
   fullwidth = false,
-  callFunc = null,
-  variant
+  callFunc = null
 }) {
   return (
     <CustomButton
-      variant={variant}
       disabled={loading}
       block={block.toString()}
       onClick={callFunc}
@@ -36,10 +34,16 @@ function SubmitButton({
         display: 'flex',
         alignItems: 'center',
         gap: '5px',
-        justifyContent: 'center'
+        justifyContent: 'center',
       }}
     >
-      {!loading ? <>{children}</> : <>{waitingMessage}...</>}
+      {!loading ? (
+        <>
+          {children}
+        </>
+      ) : (
+        <>{waitingMessage}...</>
+      )}
       {!loading && <TbLogin2 style={{ fontSize: '24px' }} />}
     </CustomButton>
   );

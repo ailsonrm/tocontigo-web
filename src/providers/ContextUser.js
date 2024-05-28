@@ -70,8 +70,11 @@ const UserProvider = ({ children }) => {
     ADMIN: {
       path: '/admin'
     },
-    MANAGER: {
-      path: '/manager'
+    PILLAR: {
+      path: '/pillar'
+    },
+    LEADER: {
+      path: '/leader'
     }
   };
 
@@ -85,7 +88,7 @@ const UserProvider = ({ children }) => {
 
   const getMeRoute = () => {
     api
-      .get('/lawyer/me')
+      .get('/auth/meTC')
       .then(response => {
         const { user } = response.data;
         setSignedIn(true);
@@ -104,7 +107,7 @@ const UserProvider = ({ children }) => {
 
   const handleLogin = async credentials => {
     await api
-      .post('/lawyer/create_session', credentials)
+      .post('/auth/sessionTC', credentials)
       .then(response => {
         const { user } = response.data;
         api.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;

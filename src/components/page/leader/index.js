@@ -11,7 +11,7 @@ import {
 } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { ContextUser } from '../../../providers/ContextUser';
-import { FaUserShield, FaUserEdit } from 'react-icons/fa';
+import { FaUsers, FaUserEdit } from 'react-icons/fa';
 import { LuRefreshCw } from 'react-icons/lu';
 import InputMask from 'react-input-mask';
 import {
@@ -77,9 +77,10 @@ const cleanPhoneNumber = phoneNumber => {
 };
 
 const validationSchema = Yup.object().shape({
-  nome: Yup.string().required('Nome é obrigatório'),
-  email: Yup.string().required('Email é obrigatório'),
-  meta: Yup.string().required('Meta é obrigatório'),
+  nome: Yup.string().required('Nome obrigatório'),
+  email: Yup.string().required('Email obrigatório'),
+  meta: Yup.string().required('Meta obrigatório'),
+  roleId: Yup.string().required('Papel obrigatório'),
   celular: Yup.string()
     .required('Celular obrigatório')
     .transform(value => value.replace(/\D/g, ''))
@@ -89,17 +90,17 @@ const validationSchema = Yup.object().shape({
     )
 });
 
-const Pillar = ({ managedBy, fetchDashboardData }) => {
+const Leader = ({ managedBy, fetchDashboardData }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
-  const [pillars, setPillars] = useState([]);
-  const [searchPillarResult, setSearchPilllarResult] = useState([]);
+  const [leaders, setLeaders] = useState([]);
+  const [searchLeaderResult, setSearchLeaderResult] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const handleCloseModal = () => setShowModal(false);
   const handleShowModal = () => setShowModal(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const handleCloseEditModal = () => setShowEditModal(false);
   const handleShowEditModal = () => setShowEditModal(true);
-  const [selectedPillar, setSelectedPillar] = useState(null);
+  const [selectedLeader, setSelectedLeader] = useState(null);
 
   const handleInputChange = event => {
     const { name, value } = event.target;
@@ -117,7 +118,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       email: values.email,
       cellPhone: cleanPhoneNumber(values.celular),
       meta: Number(values.meta) || 100,
-      roleId: 2,
+      roleId: 3,
       managedBy
     };
 
@@ -126,9 +127,8 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       .then(response => {
         resetForm();
         setShowModal(false);
-        showSnackbar('Pilar cadastrado com sucesso!', 'success');
-        fetchPilars();
-        fetchDashboardData();
+        showSnackbar('Lider cadastrado com sucesso!', 'success');
+        fetchLeaders();
       })
       .catch(error => {
         console.error('Erro na API', error.response.data.error);
@@ -137,20 +137,20 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     setSubmitting(false);
   };
 
-  function fetchPilars() {
+  function fetchLeaders() {
     api
-      .get(`/usersTC/pillars`)
+      .get(`/usersTC/leaders`)
       .then(response => {
-        setPillars([]);
-        setPillars(response.data);
-        setSearchPilllarResult(response.data);
+        setLeaders([]);
+        setLeaders(response.data);
+        setSearchLeaderResult(response.data);
       })
       .catch(() => {})
       .finally(() => {});
   }
 
   useEffect(() => {
-    fetchPilars();
+    fetchLeaders();
   }, []);
 
   function sumAllOwnedVoters(manages, ownedVoters) {
@@ -174,13 +174,13 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     return ((totalVoters * 100) / meta.toFixed(2)).toFixed(2);
   }
 
-  async function handleEditPillar(pillar) {
-    setSelectedPillar(pillar);
+  async function handleEditLeader(leader) {
+    setSelectedLeader(leader);
     handleShowEditModal();
   }
 
-  const handleUpdatePillar = async (values, { setSubmitting, resetForm }) => {
-    var updatePillarData = {
+  const handleUpdateLeader = async (values, { setSubmitting, resetForm }) => {
+    var updateLeaderData = {
       id: values.id,
       name: values.nome,
       email: values.email,
@@ -191,12 +191,12 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
     };
 
     api
-      .patch('/usersTC', updatePillarData)
+      .patch('/usersTC', updateLeaderData)
       .then(response => {
         resetForm();
         handleCloseEditModal();
         showSnackbar('Pilar atualizado com sucesso!', 'success');
-        fetchPilars();
+        fetchLeaders();
         fetchDashboardData();
       })
       .catch(error => {
@@ -269,10 +269,10 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       }}
     >
       <Search
-        data={pillars}
+        data={leaders}
         fields={['name', 'email']}
-        placeholder="Busque por pilares..."
-        setSearchResult={setSearchPilllarResult}
+        placeholder="Busque por lideranças..."
+        setSearchResult={setSearchLeaderResult}
       />
       <ButtonGroup>
         <Button
@@ -286,8 +286,8 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             gap: '10px'
           }}
         >
-          Novo Pilar
-          <FaUserShield
+          Novo Líder
+          <FaUsers
             style={{
               fontSize: 20
             }}
@@ -296,7 +296,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         <Button
           variant="outline-success"
           onClick={() => {
-            fetchPilars();
+            fetchLeaders();
             fetchDashboardData();
           }}
           style={{
@@ -315,7 +315,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         </Button>
       </ButtonGroup>
 
-      {searchPillarResult.length > 0 ? (
+      {searchLeaderResult.length > 0 ? (
         <div
           style={{
             display: 'flex',
@@ -324,7 +324,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
             gap: '10px'
           }}
         >
-          {[...searchPillarResult]
+          {[...searchLeaderResult]
             .sort((a, b) => {
               const totalVotersA = sumAllOwnedVoters(
                 a.manages,
@@ -336,8 +336,8 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
               );
               return totalVotersB - totalVotersA;
             })
-            .map((pillar, index) => (
-              <div key={pillar.id} style={{ width: '311px' }}>
+            .map((leader, index) => (
+              <div key={leader.id} style={{ width: '311px' }}>
                 <Card>
                   <Card.Body>
                     <Card.Title
@@ -352,10 +352,10 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         delay={{ show: 250, hide: 400 }}
                         overlay={
                           <Tooltip
-                            id={`tooltip-${pillar.id}`}
+                            id={`tooltip-${leader.id}`}
                             className="custom-tooltip-inner"
                           >
-                            Editar dados do pilar
+                            Editar dados da lederança
                           </Tooltip>
                         }
                       >
@@ -364,7 +364,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                             onClick={event => {
                               event.preventDefault();
                               event.stopPropagation();
-                              handleEditPillar(pillar);
+                              handleEditLeader(leader);
                             }}
                             style={{
                               cursor: 'pointer',
@@ -375,7 +375,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                           />
                         </span>
                       </OverlayTrigger>
-                      {pillar.name}
+                      {leader.name}
                     </Card.Title>
                     <Card.Subtitle
                       className="mb-2 text-muted"
@@ -385,32 +385,31 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                         whiteSpace: 'nowrap'
                       }}
                     >
-                      {pillar.email}
+                      {leader.email}
                     </Card.Subtitle>
                     <Card.Text
                       as="div"
                       style={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        gap: '5px'
+                        flexDirection: 'row',
+                        justifyContent: 'space-between'
                       }}
                     >
                       <div>
                         Apoiadores:{' '}
                         {sumAllOwnedVoters(
-                          pillar.manages,
-                          pillar.ownedVoters.length
+                          leader.manages,
+                          leader.ownedVoters.length
                         )}
                       </div>
-                      <div>Meta: {pillar.meta || 0}</div>
+                      <div>Meta: {leader.meta || 0}</div>
                       <div>
                         {calcPercentageMeta(
                           sumAllOwnedVoters(
-                            pillar.manages,
-                            pillar.ownedVoters.length
+                            leader.manages,
+                            leader.ownedVoters.length
                           ),
-                          pillar.meta
+                          leader.meta
                         )}
                         %
                       </div>
@@ -423,7 +422,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       ) : (
         <EmptyContainer>
           <img src={noResultsImg} alt="noResults" />
-          <EmptyMsg>Nenhum pilar encontrado.</EmptyMsg>
+          <EmptyMsg>Nenhuma liderança encontrada.</EmptyMsg>
         </EmptyContainer>
       )}
 
@@ -434,7 +433,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Novo Pilar</Modal.Title>
+          <Modal.Title>Novo Líder</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Formik
@@ -443,7 +442,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
               email: '',
               celular: '',
               meta: 100,
-              roleId: 2,
+              roleId: 3,
               managedBy,
               status
             }}
@@ -493,6 +492,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                     component={CustomPhoneInputMask}
                   />
                 </div>
+
                 <Form.Group className="mb-3">
                   <Form.Label>Email</Form.Label>
                   <Field
@@ -537,22 +537,22 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
         keyboard={false}
       >
         <Modal.Header closeButton>
-          <Modal.Title>Editar Pilar</Modal.Title>
+          <Modal.Title>Editar liderança</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedPillar && (
+          {selectedLeader && (
             <Formik
               initialValues={{
-                id: selectedPillar.id,
-                nome: selectedPillar.name,
-                email: selectedPillar.email,
-                celular: selectedPillar.cellPhone,
-                meta: selectedPillar.meta,
-                status: selectedPillar.status,
-                roleId: selectedPillar.roleId
+                id: selectedLeader.id,
+                nome: selectedLeader.name,
+                email: selectedLeader.email,
+                meta: selectedLeader.meta,
+                status: selectedLeader.status,
+                celular: selectedLeader.cellPhone,
+                roleId: selectedLeader.roleId
               }}
               validationSchema={validationSchema}
-              onSubmit={handleUpdatePillar}
+              onSubmit={handleUpdateLeader}
             >
               {({ values, setSubmitting, isSubmitting, errors, touched }) => (
                 <FormikForm>
@@ -612,6 +612,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       component={CustomPhoneInputMask}
                     />
                   </div>
+
                   <div
                     style={{
                       display: 'flex',
@@ -628,6 +629,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
                       <option value="3">Lider</option>
                     </MySelect>
                   </div>
+
                   <div
                     style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
@@ -674,4 +676,4 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
   );
 };
 
-export default Pillar;
+export default Leader;
