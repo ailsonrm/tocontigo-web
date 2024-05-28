@@ -94,7 +94,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#e3833d',
-                minWidth: '250px',
+                width: '100%',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -124,7 +124,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#dda700',
-                minWidth: '250px',
+                width: '100%',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -154,7 +154,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#70bf3b',
-                minWidth: '250px',
+                width: '100%',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -184,7 +184,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#ef7878',
-                minWidth: '250px',
+                width: '100%',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
@@ -217,7 +217,7 @@ const PageAdmin = () => {
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#6795f3',
-                minWidth: '250px',
+                width: '100%',
                 height: '50px',
                 borderRadius: '10px',
                 padding: '0 10px',
