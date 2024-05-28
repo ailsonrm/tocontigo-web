@@ -5,7 +5,6 @@ import PageAuth from '../pages/auth';
 import PageAdmin from '../pages/admin';
 import PagePillar from '../pages/pillar';
 import PageLeader from '../pages/leader';
-import PageSelfRegister from '../pages/selft-register';
 
 const AppRoutes = () => (
   <Routes>
@@ -17,6 +16,7 @@ const AppRoutes = () => (
         </PrivateRoute>
       }
     />
+
 
     <Route
       path="/acessar"
@@ -53,8 +53,6 @@ const AppRoutes = () => (
         </PrivateRoute>
       }
     />
-
-    <Route path="/self_register/:selfid" element={<PageSelfRegister />} />
   </Routes>
 );
 

@@ -5,7 +5,7 @@ import React, {
   useContext,
   useState
 } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from './apiClient';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert from '@mui/material/Alert';
@@ -33,7 +33,6 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 const UserProvider = ({ children }) => {
-  const { selfurl } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
@@ -56,8 +55,8 @@ const UserProvider = ({ children }) => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const showSnackbar = (message, severity = 'info', position = { vertical: 'top', horizontal: 'center' }) => {
-    setSnackbar({ open: true, message, severity, position });
+  const showSnackbar = (message, severity = 'info') => {
+    setSnackbar({ ...snackbar, open: true, message, severity });
   };
 
   const saveToken = tokenString => {
@@ -145,14 +144,7 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const fullUrl = window.location.href;
-    const path = fullUrl.split(window.location.origin)[1];
-
-    if (fullUrl.includes('/self_register')) {
-      navigate(path);
-    } else {
-      getMeRoute();
-    }
+    getMeRoute();
   }, []);
 
   const exportData = useMemo(
@@ -176,8 +168,7 @@ const UserProvider = ({ children }) => {
         open={snackbar.open}
         autoHideDuration={snackbar.autoHideDuration}
         onClose={handleCloseSnackbar}
-        //anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        anchorOrigin={snackbar.position}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         TransitionComponent={SlideTransition}
       >
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
