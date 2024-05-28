@@ -2,14 +2,17 @@ import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { ContextUser } from '../../../providers/ContextUser';
 import Box from '../box';
-import { TbLogout } from 'react-icons/tb';
-import { Button } from 'react-bootstrap';
+import { TbLogout, TbCopyCheck } from 'react-icons/tb';
+import { Button, Tooltip, OverlayTrigger } from 'react-bootstrap';
+
+const baseURL = process.env.REACT_APP_BASEURL;
 
 const Element = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 5px;
+  width: 100%;
 
   @media (max-width: 550px) {
     flex-direction: row;
@@ -100,7 +103,7 @@ const Banner = styled.div`
 `;
 
 const Header = () => {
-  const { currentUser, handleLogout } = useContext(ContextUser);
+  const { currentUser, handleLogout, showSnackbar } = useContext(ContextUser);
   const [timeRemaining, setTimeRemaining] = useState({
     days: 0,
     hours: 0,
@@ -134,8 +137,21 @@ const Header = () => {
     return <>carregando</>;
   }
 
+  function handleCopySelfURL() {    
+    navigator.clipboard
+      .writeText(
+        `${baseURL}/${currentUser?.selfurl}`
+      )
+      .then(() => {
+        showSnackbar('URL auto cadastro copiada', 'info');
+      })
+      .catch(err => {
+        showSnackbar('Erro ao copiar url auto cadastro', 'error');
+      });
+  }
+
   return (
-    <Box>
+    <Box style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
       <Banner>
         <div className="banner-header">FALTAM</div>
         <div className="time" id="countdown">
@@ -156,58 +172,108 @@ const Header = () => {
           Eleições Municipais 2024 - 1º Turno (06/10/2024)
         </div>
       </Banner>
-      <Element>
-        <div
-          id="top-bar"
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            alignItems: 'flex-start',
-            gap: '5px'
-          }}
-        >
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '100%'
+        }}
+      >
+        <Element>
           <div
-            id="logo"
-            style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}
-          >
-            <h4>{currentUser?.name}</h4>
-            <span>{currentUser?.email}</span>
-          </div>
-          <div
-            id="role"
+            id="top-bar"
             style={{
-              color: '#49a9ff',
-              border: '1px solid #49a9ff',
-              padding: '0 5px',
-              borderRadius: '10px',
-              fontSize: '12px'
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'flex-start',
+              alignItems: 'flex-start',
+              gap: '5px',
+              width: '100%'
             }}
           >
-            {currentUser?.role?.name.toLowerCase()}
-          </div>
-        </div>
+            <div
+              id="logo"
+              style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}
+            >
+              <h4>{currentUser?.name}</h4>
+              <span>{currentUser?.email}</span>
+            </div>
 
-        <Button
-          onClick={handleLogout}
-          variant="outline-danger"
+            <div
+              id="role"
+              style={{
+                color: '#49a9ff',
+                border: '1px solid #49a9ff',
+                padding: '0 5px',
+                borderRadius: '10px',
+                fontSize: '12px',
+                marginTop: '5px'
+              }}
+            >
+              {currentUser?.role?.name.toLowerCase()}
+            </div>
+          </div>
+
+          <Button
+            onClick={handleLogout}
+            variant="outline-danger"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px'
+            }}
+          >
+            <>
+              Sair
+              <TbLogout
+                style={{
+                  fontSize: 24,
+                  marginRight: 10
+                }}
+              />
+            </>
+          </Button>
+        </Element>
+      </div>
+
+      <div style={{ color: '#49a9ff' }}>
+        <span
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px'
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            fontSize: '12px',
+            fontWeight: '600',
+            border: '1px solid',
+            borderRadius: '2px',
+            marginRight: '5px',
+            padding: '0 2px',
+            backgroundColor: '#eef0f1'
           }}
         >
-          <>
-            Sair
-            <TbLogout
+          {`${baseURL}/${currentUser?.selfurl}`}
+        </span>
+        <OverlayTrigger
+          placement="bottom-start"
+          delay={{ show: 250, hide: 400 }}
+          overlay={
+            <Tooltip className="custom-tooltip-inner">
+              Copiar url de auto cadastro
+            </Tooltip>
+          }
+        >
+          <span style={{ width: '20px' }}>
+            <TbCopyCheck
               style={{
-                fontSize: 24,
-                marginRight: 10
+                cursor: 'pointer',
+                fontSize: 18
               }}
+              onClick={() => handleCopySelfURL()}
             />
-          </>
-        </Button>
-      </Element>
+          </span>
+        </OverlayTrigger>
+      </div>
     </Box>
   );
 };
