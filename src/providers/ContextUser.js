@@ -144,7 +144,14 @@ const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    getMeRoute();
+    const fullUrl = window.location.href;
+    const path = fullUrl.split(window.location.origin)[1];
+
+    if (fullUrl.includes('/self_register')) {
+      navigate(path);
+    } else {
+      getMeRoute();
+    }
   }, []);
 
   const exportData = useMemo(
