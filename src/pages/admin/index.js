@@ -28,7 +28,12 @@ import {
 import { api } from '../../providers/apiClient';
 import styled from 'styled-components';
 import GridManagement from '../../components/grid-management';
-import { CustomCounter, CustomChartsContainer } from './styles';
+import {
+  CustomCounter,
+  CustomChartsContainer,
+  CustomTabTitle,
+  CustomTabQuantity
+} from './styles';
 
 const PageAdmin = () => {
   const { currentUser } = useContext(ContextUser);
@@ -38,6 +43,9 @@ const PageAdmin = () => {
   const [groupMeta, setGroupMeta] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
   const [voters, setVoters] = useState([]);
+  const [qtdPillars, setQtdPillars] = useState(0);
+  const [qtdLeaders, setQtdLeaders] = useState(0);
+  const [qtdVoters, setQtdVoters] = useState(0);
 
   const handleShowCharts = () => {
     setShowCharts(!showCharts);
@@ -49,6 +57,7 @@ const PageAdmin = () => {
       .then(response => {
         setVoters([]);
         setVoters(response.data);
+        setQtdVoters(response.data.length);
         setSearchVoterResult(response.data);
       })
       .catch(() => {})
@@ -245,9 +254,9 @@ const PageAdmin = () => {
           </CustomCounter>
 
           <CustomChartsContainer>
-            <GenderChart data={genderData}/>
-            <AgeChart data={voters}/>
-            <ZoneChart data={zoneData}/>
+            <GenderChart data={genderData} />
+            <AgeChart data={voters} />
+            <ZoneChart data={zoneData} />
           </CustomChartsContainer>
         </div>
 
@@ -274,7 +283,16 @@ const PageAdmin = () => {
             </Tab>
             <Tab
               eventKey="pillars"
-              title="Pilares"
+              title={
+                <CustomTabTitle>
+                  {qtdPillars > 0 ? (
+                    <CustomTabQuantity value={qtdPillars}>
+                      {qtdPillars}
+                    </CustomTabQuantity>
+                  ) : null}
+                  Pilares
+                </CustomTabTitle>
+              }
               style={{
                 padding: '10px',
                 border: '1px solid #dee2e6',
@@ -288,11 +306,21 @@ const PageAdmin = () => {
               <Pillar
                 managedBy={currentUser?.id}
                 fetchDashboardData={fetchDashboardData}
+                setQtdPillars={setQtdPillars}
               />
             </Tab>
             <Tab
               eventKey="leaders"
-              title="Lideranças"
+              title={
+                <CustomTabTitle>
+                  {qtdLeaders > 0 ? (
+                    <CustomTabQuantity value={qtdLeaders}>
+                      {qtdLeaders}
+                    </CustomTabQuantity>
+                  ) : null}
+                  Lideranças
+                </CustomTabTitle>
+              }
               style={{
                 padding: '10px',
                 border: '1px solid #dee2e6',
@@ -306,11 +334,21 @@ const PageAdmin = () => {
               <Leader
                 managedBy={currentUser?.id}
                 fetchDashboardData={fetchDashboardData}
+                setQtdLeaders={setQtdLeaders}
               />
             </Tab>
             <Tab
               eventKey="voters"
-              title="Apoiadores"
+              title={
+                <CustomTabTitle>
+                  {qtdVoters > 0 ? (
+                    <CustomTabQuantity value={qtdVoters}>
+                      {qtdVoters}
+                    </CustomTabQuantity>
+                  ) : null}
+                  Apoiadores
+                </CustomTabTitle>
+              }
               style={{
                 padding: '10px',
                 border: '1px solid #dee2e6',

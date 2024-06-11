@@ -24,3 +24,16 @@ export const CustomCounter = styled.div`
     flex-direction: column;
   }
 `;
+
+export const CustomTabTitle = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+`;
+
+export const CustomTabQuantity = styled.span`
+  color: ${props => (props.value > 0 ? '#f16024' : 'inherit')};
+  font-weight: bold;
+  font-size: 12px;
+`;

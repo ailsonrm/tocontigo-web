@@ -89,7 +89,7 @@ const validationSchema = Yup.object().shape({
     )
 });
 
-const Pillar = ({ managedBy, fetchDashboardData }) => {
+const Pillar = ({ managedBy, fetchDashboardData, setQtdPillars }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const [pillars, setPillars] = useState([]);
   const [searchPillarResult, setSearchPilllarResult] = useState([]);
@@ -143,6 +143,7 @@ const Pillar = ({ managedBy, fetchDashboardData }) => {
       .then(response => {
         setPillars([]);
         setPillars(response.data);
+        setQtdPillars(response.data.length);
         setSearchPilllarResult(response.data);
       })
       .catch(() => {})

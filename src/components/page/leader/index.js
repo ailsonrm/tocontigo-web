@@ -90,7 +90,7 @@ const validationSchema = Yup.object().shape({
     )
 });
 
-const Leader = ({ managedBy, fetchDashboardData }) => {
+const Leader = ({ managedBy, fetchDashboardData, setQtdLeaders }) => {
   const { currentUser, showSnackbar } = useContext(ContextUser);
   const [leaders, setLeaders] = useState([]);
   const [searchLeaderResult, setSearchLeaderResult] = useState([]);
@@ -143,6 +143,7 @@ const Leader = ({ managedBy, fetchDashboardData }) => {
       .then(response => {
         setLeaders([]);
         setLeaders(response.data);
+        setQtdLeaders(response.data.length);
         setSearchLeaderResult(response.data);
       })
       .catch(() => {})
