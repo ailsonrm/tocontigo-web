@@ -392,27 +392,57 @@ const Leader = ({ managedBy, fetchDashboardData, setQtdLeaders }) => {
                       as="div"
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
+                        flexDirection: 'column',
                         justifyContent: 'space-between'
                       }}
                     >
-                      <div>
-                        Apoiadores:{' '}
-                        {sumAllOwnedVoters(
-                          leader.manages,
-                          leader.ownedVoters.length
-                        )}
-                      </div>
-                      <div>Meta: {leader.meta || 0}</div>
-                      <div>
-                        {calcPercentageMeta(
-                          sumAllOwnedVoters(
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'row',
+                          justifyContent: 'space-between'
+                        }}
+                      >
+                        <div>
+                          <spam style={{ fontWeight: 'bold' }}>
+                            Apoiadores:{' '}
+                          </spam>
+                          {sumAllOwnedVoters(
                             leader.manages,
                             leader.ownedVoters.length
-                          ),
-                          leader.meta
-                        )}
-                        %
+                          )}
+                        </div>
+                        <div>
+                          <spam style={{ fontWeight: 'bold' }}>Meta: </spam>
+                          {leader.meta || 0}
+                        </div>
+                        <div>
+                          {calcPercentageMeta(
+                            sumAllOwnedVoters(
+                              leader.manages,
+                              leader.ownedVoters.length
+                            ),
+                            leader.meta
+                          )}
+                          %
+                        </div>
+                      </div>
+                      <hr style={{ margin: '2px' }} />
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          fontSize: '12px'
+                        }}
+                      >
+                        <div>
+                          <spam style={{ fontWeight: 'bold' }}>Pilar: </spam>
+                          {leader?.pillarName || ' - '}
+                        </div>
+                        <div>
+                          <spam style={{ fontWeight: 'bold' }}>Gestor: </spam>
+                          {leader?.managerName || ' - '}
+                        </div>
                       </div>
                     </Card.Text>
                   </Card.Body>
