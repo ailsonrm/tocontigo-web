@@ -159,7 +159,7 @@ const PageAdmin = () => {
               </div>
             </div>
 
-            <div
+            {/* <div
               style={{
                 border: '1px solid rgb(222, 226, 230)',
                 backgroundColor: '#70bf3b',
@@ -220,7 +220,7 @@ const PageAdmin = () => {
                   Apoiadore não validados
                 </span>
               </div>
-            </div>
+            </div> */}
 
             <div
               style={{
